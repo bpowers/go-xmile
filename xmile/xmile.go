@@ -13,12 +13,11 @@ import (
 // File represents the entire contents of a XMILE document.
 type File struct {
 	XMLName xml.Name `xml:"xmile"`
-
-	Version  string   `xml:"version,attr"`
-	Level    int      `xml:"level,attr"`
-	Header   Header   `xml:"header"`
-	SimSpecs SimSpecs `xml:"sim_specs"`
-	Models   []*Model `xml:",omitempty"`
+	Version string   `xml:"version,attr"`
+	Level   int      `xml:"level,attr"`
+	Header  Header   `xml:"header"`
+	SimSpec SimSpec  `xml:"sim_specs"`
+	Models  []*Model `xml:",omitempty"`
 }
 
 // Header contains metadata about a given XMILE File.
@@ -37,10 +36,10 @@ type Product struct {
 	Lang    string `xml:"lang,attr"`
 }
 
-// SimSpecs defines the time parameters a given model should be
+// SimSpec defines the time parameters a given model should be
 // simulated with, or the defaults for all models defined in a given
 // file.
-type SimSpecs struct {
+type SimSpec struct {
 	TimeUnits string  `xml:"time_units,attr,omitempty"`
 	Start     float64 `xml:"start"`
 	Stop      float64 `xml:"stop"`
@@ -53,6 +52,7 @@ type SimSpecs struct {
 // of that model.
 type Model struct {
 	XMLName   xml.Name    `xml:"model"`
+	Name      string      `xml:"name,attr,omitempty"`
 	Variables []*Variable `xml:"variables>variable,omitempty"`
 	Views     []*View     `xml:"views,omitempty>view,omitempty"`
 }
@@ -62,7 +62,7 @@ type Model struct {
 // diagram, or the iThink interface layer.
 type View struct {
 	XMLName xml.Name `xml:"view"`
-	Name string `xml:"name,attr,omitempty"`
+	Name    string   `xml:"name,attr,omitempty"`
 }
 
 // Variable is the definition of a model entity.  Some fields, such as
@@ -71,11 +71,11 @@ type View struct {
 // XMLName.Name.
 type Variable struct {
 	XMLName  xml.Name
-	Name     string `xml:"name,attr"`
-	Equation string `xml:"eqn"`
-	Inflows  []string `xml:"inflow,omitempty"` // empty for non-stocks
+	Name     string   `xml:"name,attr"`
+	Equation string   `xml:"eqn"`
+	Inflows  []string `xml:"inflow,omitempty"`  // empty for non-stocks
 	Outflows []string `xml:"outflow,omitempty"` // empty for non-stocks
-	Units    string `xml:"units"`
+	Units    string   `xml:"units"`
 }
 
 // UUIDv4 returns a version 4 (random) variant of a UUID, or an error
@@ -92,4 +92,29 @@ func UUIDv4() (string, error) {
 	}
 
 	return fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:]), nil
+}
+
+// NewFile returns a new File object of the given XMILE compliance
+// level and name, along with a new UUID.
+func NewFile(level int, name string) *File {
+	id, err := UUIDv4()
+	if err != nil {
+		// this is pretty frowned upon, but I don't want
+		// NewFile's interface to potentially fail, and if
+		// rand.Read fails we have bigger issues.
+		panic(err)
+	}
+
+	f := &File{Version: "1.0", Level: level}
+	f.Header = Header{
+		Name:   "hello, xworld",
+		UUID:   id,
+		Vendor: "XMILE TC",
+		Product: Product{
+			Name:    "go-xmile",
+			Version: "0.1",
+			Lang:    "en",
+		},
+	}
+	return f
 }
