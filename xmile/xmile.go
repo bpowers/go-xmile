@@ -111,7 +111,7 @@ func NewFile(level int, name string) *File {
 
 	f := &File{Version: "1.0", Level: level}
 	f.Header = Header{
-		Name:   "hello, xworld",
+		Name:   name,
 		UUID:   id,
 		Vendor: "XMILE TC",
 		Product: Product{
