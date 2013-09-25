@@ -10,6 +10,10 @@ import (
 	"fmt"
 )
 
+// the standard XML declaration, declared as a constant for easy
+// reuse.
+const XMLDeclaration = `<?xml version="1.0" encoding="utf-8" ?>`
+
 // File represents the entire contents of a XMILE document.
 type File struct {
 	XMLName xml.Name `xml:"xmile"`
