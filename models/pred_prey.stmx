@@ -3,6 +3,7 @@
     <header>
         <smile version="1.0">
             <uses_arrays>1</uses_arrays>
+	    <uses_queue/>
         </smile>
         <name>Predator Prey Dynamics</name>
         <uuid>be75d15c-2d09-4cd8-84cb-fdc59b71fe05</uuid>

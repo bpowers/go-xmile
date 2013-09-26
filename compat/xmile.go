@@ -19,21 +19,53 @@ const XMLDeclaration = `<?xml version="1.0" encoding="utf-8" ?>`
 
 // File represents the entire contents of a XMILE document.
 type File struct {
-	XMLName xml.Name `xml:"xmile"`
-	Version string   `xml:"version,attr"`
-	Level   int      `xml:"level,attr"`
-	Header  Header   `xml:"header"`
-	SimSpec SimSpec  `xml:"sim_specs"`
-	Models  []*Model `xml:",omitempty"`
+	XMLName    xml.Name     `xml:"http://www.systemdynamics.org/XMILE xmile"`
+	Version    string       `xml:"version,attr"`
+	Level      int          `xml:"level,attr"`
+	Header     Header       `xml:"header"`
+	SimSpec    SimSpec      `xml:"sim_specs"`
+	Dimensions []*Dimension `xml:"dimensions>dim,omitempty"`
+	IseePrefs  IseePrefs    `xml:"isee prefs"`
+	Models     []*Model     `xml:"model,omitempty"`
+}
+
+type IseePrefs struct {
+	XMLName                xml.Name `xml:"isee prefs"`
+	Layer                  string   `xml:"layer,attr"`
+	GridWidth              string   `xml:"grid_width,attr"`
+	GridHeight             string   `xml:"grid_height,attr"`
+	DivByZeroAlert         bool     `xml:"divide_by_zero_alert,attr"`
+	ShowModPrefix          bool     `xml:"show_module_prefix,attr"`
+	HideTransparentButtons bool     `xml:"hide_transparent_buttons,attr"`
 }
 
 // Header contains metadata about a given XMILE File.
 type Header struct {
+	Smile   Smile   `xml:"smile"`
 	Name    string  `xml:"name"`
 	UUID    string  `xml:"uuid"`
 	Vendor  string  `xml:"vendor"`
 	Product Product `xml:"product"`
 }
+
+type Dimension struct {
+	XMLName xml.Name `xml:"dim"`
+	Name    string   `xml:"name,attr"`
+	Size    string   `xml:"size,attr"`
+}
+
+// Smile contains information on the features used in this model.
+type Smile struct {
+	Version       string   `xml:"version,attr"`
+	UsesArrays    int      `xml:"uses_arrays,omitempty"`
+	UsesQueue     *Exister `xml:"uses_queue"`
+	UsesConveyer  *Exister `xml:"uses_conveyer"`
+	UsesSubmodels *Exister `xml:"uses_submodels"`
+}
+
+// Exister is used as a pointer when we want to make sure an empty tag
+// exists.
+type Exister string
 
 // Product contains information about the software that created this
 // XMILE document.
@@ -60,16 +92,17 @@ type SimSpec struct {
 type Model struct {
 	XMLName   xml.Name    `xml:"model"`
 	Name      string      `xml:"name,attr,omitempty"`
-	Variables []*Variable `xml:"variables>variable,omitempty"`
-	Views     []*View     `xml:"views,omitempty>view,omitempty"`
+	Variables []*Variable `xml:",any,omitempty"`
+	Display   View        `xml:"display,omitempty"`
+	Interface View        `xml:"interface,omitempty"`
 }
 
 // View is a collection of objects representing the visual structure
 // of a model, such as a stock and flow diagram, a causal loop
 // diagram, or the iThink interface layer.
 type View struct {
-	XMLName xml.Name `xml:"view"`
-	Name    string   `xml:"name,attr,omitempty"`
+	XMLName xml.Name
+	Name    string `xml:"name,attr,omitempty"`
 }
 
 // Variable is the definition of a model entity.  Some fields, such as
@@ -79,10 +112,22 @@ type View struct {
 type Variable struct {
 	XMLName  xml.Name
 	Name     string   `xml:"name,attr"`
+	Doc      string   `xml:"doc,omitempty"`
 	Equation string   `xml:"eqn"`
+	NonNeg   *Exister `xml:"non_negative"`
 	Inflows  []string `xml:"inflow,omitempty"`  // empty for non-stocks
 	Outflows []string `xml:"outflow,omitempty"` // empty for non-stocks
-	Units    string   `xml:"units"`
+	Units    string   `xml:"units,omitempty"`
+	Display  Display  `xml:"display"`
+}
+
+type Display struct {
+	XMLName   xml.Name `xml:"display"`
+	X         float64  `xml:"x,attr"`
+	Y         float64  `xml:"y,attr"`
+	UID       int      `xml:"uid,omitempty"`
+	Color     string   `xml:"color,attr,omitempty"`
+	LabelSide string   `xml:"label_side,omitempty"`
 }
 
 // UUIDv4 returns a version 4 (random) variant of a UUID, or an error
