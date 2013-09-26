@@ -33,6 +33,7 @@ func ExampleNewFile() {
 	}
 
 	f := xmile.NewFile(1, "hello xworld")
+	f.Header.UUID = "7a435517-ce5d-c816-9ec5-b34e44ec4fee"
 	f.Models = append(f.Models, m)
 	f.SimSpec.TimeUnits = "year"
 
@@ -48,35 +49,31 @@ func ExampleNewFile() {
 	// Output:
 	//<?xml version="1.0" encoding="utf-8" ?>
 	//<xmile version="1.0" level="1">
-	//    <header>
-	//        <name>hello, xworld</name>
-	//        <uuid>7a435517-ce5d-c816-9ec5-b34e44ec4fee</uuid>
-	//        <vendor>XMILE TC</vendor>
-	//        <product version="0.1" lang="en">go-xmile</product>
-	//    </header>
-	//    <sim_specs time_units="year">
-	//        <start>0</start>
-	//        <stop>0</stop>
-	//        <dt>0</dt>
-	//    </sim_specs>
-	//    <model>
-	//        <variables>
-	//            <flow name="deaths">
-	//                <eqn>population*.07</eqn>
-	//                <units>people/year</units>
-	//            </flow>
-	//            <flow name="migrations">
-	//                <eqn>10</eqn>
-	//                <units>people/year</units>
-	//            </flow>
-	//            <stock name="population">
-	//                <eqn>100</eqn>
-	//                <inflow>births</inflow>
-	//                <inflow>migrations</inflow>
-	//                <outflow>deaths</outflow>
-	//                <units>people</units>
-	//            </stock>
-	//        </variables>
-	//    </model>
+	//     <header>
+	//         <name>hello xworld</name>
+	//         <uuid>7a435517-ce5d-c816-9ec5-b34e44ec4fee</uuid>
+	//         <vendor>XMILE TC</vendor>
+	//         <product version="0.1" lang="en">go-xmile</product>
+	//     </header>
+	//     <sim_specs time_units="year">
+	//         <start>0</start>
+	//         <stop>0</stop>
+	//         <dt>0</dt>
+	//     </sim_specs>
+	//     <model>
+	//         <variables>
+	//             <flow name="migrations">
+	//                 <eqn>10</eqn>
+	//                 <units>people/year</units>
+	//             </flow>
+	//             <stock name="population">
+	//                 <eqn>100</eqn>
+	//                 <inflow>births</inflow>
+	//                 <inflow>migrations</inflow>
+	//                 <outflow>deaths</outflow>
+	//                 <units>people</units>
+	//             </stock>
+	//         </variables>
+	//     </model>
 	//</xmile>
 }
