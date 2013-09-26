@@ -93,8 +93,8 @@ type Model struct {
 	XMLName   xml.Name    `xml:"model"`
 	Name      string      `xml:"name,attr,omitempty"`
 	Variables []*Variable `xml:",any,omitempty"`
-	Display   View        `xml:"display,omitempty"`
-	Interface View        `xml:"interface,omitempty"`
+	Display   View        `xml:"display"`
+	Interface View        `xml:"interface"`
 }
 
 // View is a collection of objects representing the visual structure
@@ -102,7 +102,8 @@ type Model struct {
 // diagram, or the iThink interface layer.
 type View struct {
 	XMLName xml.Name
-	Name    string `xml:"name,attr,omitempty"`
+	Name    string     `xml:"name,attr,omitempty"`
+	Ents    []*Display `xml:",any,omitempty"`
 }
 
 // Variable is the definition of a model entity.  Some fields, such as
@@ -118,16 +119,65 @@ type Variable struct {
 	Inflows  []string `xml:"inflow,omitempty"`  // empty for non-stocks
 	Outflows []string `xml:"outflow,omitempty"` // empty for non-stocks
 	Units    string   `xml:"units,omitempty"`
+	GF       *GF      `xml:"gf"`
 	Display  Display  `xml:"display"`
 }
 
+type GF struct {
+	XMLName  xml.Name `xml:"gf"`
+	Discrete bool     `xml:"discrete,attr"`
+	XPoints  string   `xml:"xpts"`
+	YPoints  string   `xml:"ypts"`
+	XScale   Scale    `xml:"xscale"`
+	YScale   Scale    `xml:"yscale"`
+}
+
+type Scale struct {
+	Min float64 `xml:"min,attr"`
+	Max float64 `xml:"max,attr"`
+}
+
 type Display struct {
-	XMLName   xml.Name `xml:"display"`
-	X         float64  `xml:"x,attr"`
-	Y         float64  `xml:"y,attr"`
-	UID       int      `xml:"uid,omitempty"`
-	Color     string   `xml:"color,attr,omitempty"`
-	LabelSide string   `xml:"label_side,omitempty"`
+	XMLName     xml.Name
+	X           float64    `xml:"x,attr"`
+	Y           float64    `xml:"y,attr"`
+	Width       float64    `xml:"width,attr,omitempty"`
+	Height      float64    `xml:"height,attr,omitempty"`
+	UID         int        `xml:"uid,attr,omitempty"`
+	Appearance  string     `xml:"appearance,attr,omitempty"`
+	Background  string     `xml:"background,attr,omitempty"`
+	Color       string     `xml:"color,attr,omitempty"`
+	Style       string     `xml:"style,attr,omitempty"`
+	BorderColor string     `xml:"border-color,attr,omitempty"`
+	BorderStyle string     `xml:"border-style,attr,omitempty"`
+	BorderWidth string     `xml:"border-width,attr,omitempty"`
+	Fill        string     `xml:"fill,attr,omitempty"`
+	LabelSide   string     `xml:"label_side,omitempty"`
+	LabelAngle  string     `xml:"label_angle,omitempty"`
+	From        string     `xml:"from,omitempty"`
+	To          string     `xml:"to,omitempty"`
+	Points      *[]*Point  `xml:"pts>pt"`
+	NavAction   *NavAction `xml:"link"`
+	Image       *Image     `xml:"image"`
+}
+
+type NavAction struct {
+	Target string  `xml:"target,attr"`
+	X      float64 `xml:"x,attr"`
+	Y      float64 `xml:"y,attr"`
+}
+
+type Image struct {
+	XMLName xml.Name `xml:"image"`
+	Width   float64  `xml:"width,attr"`
+	Height  float64  `xml:"height,attr"`
+	Data    string   `xml:",chardata"`
+}
+
+type Point struct {
+	XMLName xml.Name `xml:"pt"`
+	X       float64  `xml:"x,attr"`
+	Y       float64  `xml:"y,attr"`
 }
 
 // UUIDv4 returns a version 4 (random) variant of a UUID, or an error

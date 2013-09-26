@@ -26,6 +26,13 @@ func TestRead(t *testing.T) {
 	// XMILE namespace gets propagated to that tag.
 	for _, v := range f.Models[0].Variables {
 		v.XMLName.Space = ""
+		v.Display.XMLName.Space = ""
+	}
+	for _, v := range f.Models[0].Display.Ents {
+		v.XMLName.Space = ""
+	}
+	for _, v := range f.Models[0].Interface.Ents {
+		v.XMLName.Space = ""
 	}
 
 	output, err := xml.MarshalIndent(f, "", "    ")
@@ -33,7 +40,7 @@ func TestRead(t *testing.T) {
 		t.Fatalf("xml.MarshalIndent: %s", err)
 	}
 
-	os.Stdout.Write([]byte(xmile.XMLDeclaration + "\n"))
-	os.Stdout.Write(output)
-	os.Stdout.Write([]byte("\n"))
+	os.Stderr.Write([]byte(xmile.XMLDeclaration + "\n"))
+	os.Stderr.Write(output)
+	os.Stderr.Write([]byte("\n"))
 }
