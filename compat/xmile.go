@@ -8,9 +8,9 @@
 package compat
 
 import (
-	"crypto/rand"
 	"encoding/xml"
 	"fmt"
+	"github.com/bpowers/go-xmile/xmile"
 )
 
 // the standard XML declaration, declared as a constant for easy
@@ -257,26 +257,10 @@ type Image struct {
 	Data string `xml:",chardata"`
 }
 
-// UUIDv4 returns a version 4 (random) variant of a UUID, or an error
-// if it can not.
-func UUIDv4() (string, error) {
-	const uuidBytes = 16
-	b := make([]byte, uuidBytes)
-
-	n, err := rand.Read(b)
-	if err != nil {
-		return "", err
-	} else if n != uuidBytes {
-		return "", fmt.Errorf("rand.Read(): short read  of %d (wanted %d)", n, uuidBytes)
-	}
-
-	return fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:]), nil
-}
-
 // NewFile returns a new File object of the given XMILE compliance
 // level and name, along with a new UUID.
 func NewFile(level int, name string) *File {
-	id, err := UUIDv4()
+	id, err := xmile.UUIDv4()
 	if err != nil {
 		// this is pretty frowned upon, but I don't want
 		// NewFile's interface to potentially fail, and if
@@ -296,4 +280,58 @@ func NewFile(level int, name string) *File {
 		},
 	}
 	return f
+}
+
+func cleanIseeDisplayTag(d *Display) {
+	d.XMLName.Space = ""
+	switch d.XMLName.Local {
+	case "text_box", "menu_action":
+	case "item":
+		d.XMLName.Space = "isee"
+	case "story", "chapter", "group", "annotation":
+		d.XMLName.Space = "isee"
+		d.Content = ""
+	default:
+		d.Content = ""
+	}
+
+	for _, c := range d.Children {
+		cleanIseeDisplayTag(c)
+	}
+}
+
+func ReadFile(contents []byte) (*File, error) {
+	f := new(File)
+	if err := xml.Unmarshal(contents, f); err != nil {
+		return nil, fmt.Errorf("xml.Unmarshal: %s", err)
+	}
+
+	// this bit is cleaning up some weird interactions the go
+	// reflection-based code has without isee xmlnamespace.
+
+	// BUG(bp) when we read in a tag with a variable tag name, the
+	// XMILE namespace gets propagated to that tag.
+	f.IseeHack = "http://iseesystems.com/XMILE"
+	f.IseePrefs.XMLName.Space = "isee"
+	f.IseePrefs.Window.XMLName.Space = "isee"
+	f.IseePrefs.Security.XMLName.Space = "isee"
+	f.IseePrefs.PrintSetup.XMLName.Space = "isee"
+	f.EqnPrefs.XMLName.Space = "isee"
+	for _, m := range f.Models {
+		m.Display.XMLName.Space = ""
+		m.Interface.XMLName.Space = ""
+		for _, v := range m.Variables {
+			v.XMLName.Space = ""
+			cleanIseeDisplayTag(v.Display)
+		}
+		for _, v := range m.Display.Ents {
+			cleanIseeDisplayTag(v)
+		}
+		for _, v := range m.Interface.Ents {
+			cleanIseeDisplayTag(v)
+		}
+		m.Interface.SimDelay = nil
+	}
+
+	return f, nil
 }
