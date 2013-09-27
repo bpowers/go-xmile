@@ -143,13 +143,22 @@ type Model struct {
 // of a model, such as a stock and flow diagram, a causal loop
 // diagram, or the iThink interface layer.
 type View struct {
-	XMLName  xml.Name
-	Name     string     `xml:"name,attr,omitempty"`
-	Ents     []*Display `xml:",any,omitempty"`
-	ScrollX  float64    `xml:"scroll_x,attr"`
-	ScrollY  float64    `xml:"scroll_y,attr"`
-	Zoom     float64    `xml:"zoom,attr"`
-	SimDelay *SimDelay  `xml:"simulation_delay,omitempty"`
+	XMLName         xml.Name
+	Name            string     `xml:"name,attr,omitempty"`
+	Ents            []*Display `xml:",any,omitempty"`
+	ScrollX         float64    `xml:"scroll_x,attr"`
+	ScrollY         float64    `xml:"scroll_y,attr"`
+	Zoom            float64    `xml:"zoom,attr"`
+	SimDelay        *SimDelay  `xml:"simulation_delay,omitempty"`
+	PageWidth       int        `xml:"page_width,attr,omitempty"`
+	PageHeight      int        `xml:"page_height,attr,omitempty"`
+	PageRows        int        `xml:"page_rows,attr,omitempty"`
+	PageCols        int        `xml:"page_cols,attr,omitempty"`
+	PageSequence    string     `xml:"page_sequence,attr,omitempty"`
+	ReportFlows     string     `xml:"report_flows,attr,omitempty"`
+	ShowPages       bool       `xml:"show_pages,attr,omitempty"`
+	ShowValsOnHover bool       `xml:"isee show_values_on_hover,attr,omitempty"`
+	ConverterSize   string     `xml:"isee converter_size,attr,omitempty"`
 }
 
 type SimDelay struct {
@@ -189,36 +198,50 @@ type Scale struct {
 type Display struct {
 	XMLName xml.Name
 	Rect
-	UID         string     `xml:"uid,attr,omitempty"` // BUG(bp) should be int?
-	Type        string     `xml:"type,attr,omitempty"`
-	ZIndex      int        `xml:"visible_index,attr,omitempty"`
-	Appearance  string     `xml:"appearance,attr,omitempty"`
-	Background  string     `xml:"background,attr,omitempty"`
-	Color       string     `xml:"color,attr,omitempty"`
-	Style       string     `xml:"style,attr,omitempty"`
-	FontFamily  string     `xml:"font-family,attr,omitempty"`
-	FontSize    string     `xml:"font-size,attr,omitempty"`
-	FontStyle   string     `xml:"font-style,attr,omitempty"`
-	TextAlign   string     `xml:"text-align,attr,omitempty"`
-	TextDeco    string     `xml:"text-decoration,attr,omitempty"`
-	BorderColor string     `xml:"border-color,attr,omitempty"`
-	BorderStyle string     `xml:"border-style,attr,omitempty"`
-	BorderWidth string     `xml:"border-width,attr,omitempty"`
-	LockText    bool       `xml:"lock_text,attr,omitempty"`
-	Margin      string     `xml:"margin,attr,omitempty"`
-	Fill        string     `xml:"fill,attr,omitempty"`
-	Label       string     `xml:"label,attr,omitempty"`
-	LabelSide   string     `xml:"label_side,omitempty"`
-	LabelAngle  string     `xml:"label_angle,omitempty"`
-	From        string     `xml:"from,omitempty"`
-	To          string     `xml:"to,omitempty"`
-	ScrollX     float64    `xml:"scroll_x,attr,omitempty"`
-	ScrollY     float64    `xml:"scroll_y,attr,omitempty"`
-	Points      *[]*Point  `xml:"pts>pt"`
-	NavAction   *NavAction `xml:"link"`
-	Image       *Image     `xml:"image"`
-	Children    []*Display `xml:",any,omitempty"`
-	Content     string     `xml:",chardata"`
+	UID             string     `xml:"uid,attr,omitempty"` // BUG(bp) should be int?
+	Title           string     `xml:"title,attr,omitempty"`
+	Type            string     `xml:"type,attr,omitempty"`
+	ZIndex          int        `xml:"visible_index,attr,omitempty"`
+	Appearance      string     `xml:"appearance,attr,omitempty"`
+	Background      string     `xml:"background,attr,omitempty"`
+	ShowGrid        bool       `xml:"show_grid,attr,omitempty"`
+	Color           string     `xml:"color,attr,omitempty"`
+	Style           string     `xml:"style,attr,omitempty"`
+	FontFamily      string     `xml:"font-family,attr,omitempty"`
+	FontSize        string     `xml:"font-size,attr,omitempty"`
+	FontStyle       string     `xml:"font-style,attr,omitempty"`
+	TextAlign       string     `xml:"text-align,attr,omitempty"`
+	TextDeco        string     `xml:"text-decoration,attr,omitempty"`
+	BorderColor     string     `xml:"border-color,attr,omitempty"`
+	BorderStyle     string     `xml:"border-style,attr,omitempty"`
+	BorderWidth     string     `xml:"border-width,attr,omitempty"`
+	LockText        bool       `xml:"lock_text,attr,omitempty"`
+	Margin          string     `xml:"margin,attr,omitempty"`
+	Fill            string     `xml:"fill,attr,omitempty"`
+	Label           string     `xml:"label,attr,omitempty"`
+	LabelSide       string     `xml:"label_side,omitempty"`
+	LabelAngle      string     `xml:"label_angle,omitempty"`
+	From            string     `xml:"from,omitempty"`
+	To              string     `xml:"to,omitempty"`
+	IconOf          string     `xml:"icon_of,attr,omitempty"`
+	PenWidth        int        `xml:"pen_width,attr,omitempty"`
+	Precision       int        `xml:"precision,attr,omitempty"`
+	Units           string     `xml:"percentage,attr,omitempty"`
+	SeperatorK      bool       `xml:"thousands_separator,attr,omitempty"`
+	ShowName        bool       `xml:"show_name,attr,omitempty"`
+	RetainEndingVal bool       `xml:"retain_ending_value,attr,omitempty"`
+	ScrollX         float64    `xml:"scroll_x,attr,omitempty"`
+	ScrollY         float64    `xml:"scroll_y,attr,omitempty"`
+	EntRef          *EntRef    `xml:"entity,omitempty"`
+	Points          *[]*Point  `xml:"pts>pt"`
+	NavAction       *NavAction `xml:"link"`
+	Image           *Image     `xml:"image"`
+	Children        []*Display `xml:",any,omitempty"`
+	Content         string     `xml:",chardata"`
+}
+
+type EntRef struct {
+	Name string `xml:"name,attr"`
 }
 
 type NavAction struct {
