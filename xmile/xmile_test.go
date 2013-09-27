@@ -11,6 +11,7 @@ import (
 	xmile "github.com/bpowers/go-xmile/compat"
 	"io/ioutil"
 	"os"
+	"strings"
 	"testing"
 	"text/template"
 )
@@ -56,9 +57,22 @@ type VInfo struct {
 	Ins   []string // only flows have ins
 }
 
+func normalizeName(n string) string {
+	n = strings.Replace(n, `\n`, "_", -1)
+	n = strings.ToLower(n)
+	return n
+}
+
+func normalizeNames(f *xmile.File) {
+	for _, m := range f.Models {
+		for _, v := range m.Variables {
+			v.Name = normalizeName(v.Name)
+		}
+	}
+}
+
 func writeDot(f *xmile.File) error {
-	w := bufio.NewWriter(os.Stderr)
-	defer w.Flush()
+	normalizeNames(f)
 
 	var data DotData
 
@@ -71,6 +85,8 @@ func writeDot(f *xmile.File) error {
 		return fmt.Errorf("Execute: %s", err)
 	}
 
+	w := bufio.NewWriter(os.Stderr)
+	defer w.Flush()
 	w.Write(buf.Bytes())
 	w.Write([]byte("\n"))
 
