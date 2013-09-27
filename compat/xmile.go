@@ -157,8 +157,8 @@ type View struct {
 	PageSequence    string     `xml:"page_sequence,attr,omitempty"`
 	ReportFlows     string     `xml:"report_flows,attr,omitempty"`
 	ShowPages       bool       `xml:"show_pages,attr,omitempty"`
-	ShowValsOnHover bool       `xml:"isee show_values_on_hover,attr,omitempty"`
-	ConverterSize   string     `xml:"isee converter_size,attr,omitempty"`
+	ShowValsOnHover bool       `xml:"show_values_on_hover,attr,omitempty"`
+	ConverterSize   string     `xml:"converter_size,attr,omitempty"`
 }
 
 type SimDelay struct {
@@ -241,7 +241,8 @@ type Display struct {
 }
 
 type EntRef struct {
-	Name string `xml:"name,attr"`
+	Name    string `xml:"name,attr,omitempty"`
+	Content string `xml:",chardata"`
 }
 
 type NavAction struct {
