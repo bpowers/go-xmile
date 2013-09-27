@@ -34,6 +34,12 @@ func TestRead(t *testing.T) {
 	for _, v := range f.Models[0].Interface.Ents {
 		v.XMLName.Space = ""
 	}
+	f.IseeHack = "http://iseesystems.com/XMILE"
+	f.IseePrefs.XMLName.Space = "isee"
+	f.IseePrefs.Window.XMLName.Space = "isee"
+	f.IseePrefs.Security.XMLName.Space = "isee"
+	f.IseePrefs.PrintSetup.XMLName.Space = "isee"
+	f.EqnPrefs.XMLName.Space = "isee"
 
 	output, err := xml.MarshalIndent(f, "", "    ")
 	if err != nil {

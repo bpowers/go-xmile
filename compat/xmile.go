@@ -22,21 +22,46 @@ type File struct {
 	XMLName    xml.Name     `xml:"http://www.systemdynamics.org/XMILE xmile"`
 	Version    string       `xml:"version,attr"`
 	Level      int          `xml:"level,attr"`
+	IseeHack   string       `xml:"xmlns:isee,attr"` // FIXME(bp) workaround for, I think go issue w.r.t. namespaces
 	Header     Header       `xml:"header"`
 	SimSpec    SimSpec      `xml:"sim_specs"`
 	Dimensions []*Dimension `xml:"dimensions>dim,omitempty"`
-	IseePrefs  IseePrefs    `xml:"isee prefs"`
+	ModelUnits ModelUnits   `xml:"model_units"`
+	IseePrefs  IseePrefs    `xml:"prefs"`
+	EqnPrefs   EqnPrefs     `xml:"equation_prefs"`
 	Models     []*Model     `xml:"model,omitempty"`
 }
 
 type IseePrefs struct {
-	XMLName                xml.Name `xml:"isee prefs"`
+	XMLName                xml.Name
 	Layer                  string   `xml:"layer,attr"`
 	GridWidth              string   `xml:"grid_width,attr"`
 	GridHeight             string   `xml:"grid_height,attr"`
 	DivByZeroAlert         bool     `xml:"divide_by_zero_alert,attr"`
 	ShowModPrefix          bool     `xml:"show_module_prefix,attr"`
 	HideTransparentButtons bool     `xml:"hide_transparent_buttons,attr"`
+	Window                 Window   `xml:"window"`
+	Security               Security `xml:"security"`
+	PrintSetup             Window   `xml:"print_setup"`
+}
+
+type EqnPrefs struct {
+	XMLName xml.Name
+	OrderBy string `xml:"order_by,attr"`
+}
+
+type ModelUnits struct {
+}
+
+type Window struct {
+	XMLName     xml.Name
+	Width       int    `xml:"width,attr"`
+	Height      int    `xml:"height,attr"`
+	Orientation string `xml:"orientation,attr,omitempty"`
+}
+
+type Security struct {
+	XMLName xml.Name
 }
 
 // Header contains metadata about a given XMILE File.
@@ -114,7 +139,7 @@ type Variable struct {
 	XMLName  xml.Name
 	Name     string   `xml:"name,attr"`
 	Doc      string   `xml:"doc,omitempty"`
-	Equation string   `xml:"eqn"`
+	Eqn      string   `xml:"eqn"`
 	NonNeg   *Exister `xml:"non_negative"`
 	Inflows  []string `xml:"inflow,omitempty"`  // empty for non-stocks
 	Outflows []string `xml:"outflow,omitempty"` // empty for non-stocks
