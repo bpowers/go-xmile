@@ -53,10 +53,27 @@ type EqnPrefs struct {
 type ModelUnits struct {
 }
 
+// Point represents a position in a 2D plane
+type Point struct {
+	X float64 `xml:"x,attr"`
+	Y float64 `xml:"y,attr"`
+}
+
+// Size represents an area on a 2D plane
+type Size struct {
+	Width  float64 `xml:"width,attr,omitempty"`
+	Height float64 `xml:"height,attr,omitempty"`
+}
+
+// Rect is an area with a position.
+type Rect struct {
+	Point
+	Size
+}
+
 type Window struct {
-	XMLName     xml.Name
-	Width       int    `xml:"width,attr"`
-	Height      int    `xml:"height,attr"`
+	XMLName xml.Name
+	Size
 	Orientation string `xml:"orientation,attr,omitempty"`
 }
 
@@ -126,9 +143,16 @@ type Model struct {
 // of a model, such as a stock and flow diagram, a causal loop
 // diagram, or the iThink interface layer.
 type View struct {
-	XMLName xml.Name
-	Name    string     `xml:"name,attr,omitempty"`
-	Ents    []*Display `xml:",any,omitempty"`
+	XMLName  xml.Name
+	Name     string     `xml:"name,attr,omitempty"`
+	Ents     []*Display `xml:",any,omitempty"`
+	ScrollX  float64    `xml:"scroll_x,attr"`
+	ScrollY  float64    `xml:"scroll_y,attr"`
+	Zoom     float64    `xml:"zoom,attr"`
+	SimDelay *SimDelay  `xml:"simulation_delay,omitempty"`
+}
+
+type SimDelay struct {
 }
 
 // Variable is the definition of a model entity.  Some fields, such as
@@ -145,7 +169,7 @@ type Variable struct {
 	Outflows []string `xml:"outflow,omitempty"` // empty for non-stocks
 	Units    string   `xml:"units,omitempty"`
 	GF       *GF      `xml:"gf"`
-	Display  Display  `xml:"display"`
+	Display  *Display `xml:"display"`
 }
 
 type GF struct {
@@ -163,46 +187,50 @@ type Scale struct {
 }
 
 type Display struct {
-	XMLName     xml.Name
-	X           float64    `xml:"x,attr"`
-	Y           float64    `xml:"y,attr"`
-	Width       float64    `xml:"width,attr,omitempty"`
-	Height      float64    `xml:"height,attr,omitempty"`
-	UID         int        `xml:"uid,attr,omitempty"`
+	XMLName xml.Name
+	Rect
+	UID         string     `xml:"uid,attr,omitempty"` // BUG(bp) should be int?
+	Type        string     `xml:"type,attr,omitempty"`
+	ZIndex      int        `xml:"visible_index,attr,omitempty"`
 	Appearance  string     `xml:"appearance,attr,omitempty"`
 	Background  string     `xml:"background,attr,omitempty"`
 	Color       string     `xml:"color,attr,omitempty"`
 	Style       string     `xml:"style,attr,omitempty"`
+	FontFamily  string     `xml:"font-family,attr,omitempty"`
+	FontSize    string     `xml:"font-size,attr,omitempty"`
+	FontStyle   string     `xml:"font-style,attr,omitempty"`
+	TextAlign   string     `xml:"text-align,attr,omitempty"`
+	TextDeco    string     `xml:"text-decoration,attr,omitempty"`
 	BorderColor string     `xml:"border-color,attr,omitempty"`
 	BorderStyle string     `xml:"border-style,attr,omitempty"`
 	BorderWidth string     `xml:"border-width,attr,omitempty"`
+	LockText    bool       `xml:"lock_text,attr,omitempty"`
+	Margin      string     `xml:"margin,attr,omitempty"`
 	Fill        string     `xml:"fill,attr,omitempty"`
+	Label       string     `xml:"label,attr,omitempty"`
 	LabelSide   string     `xml:"label_side,omitempty"`
 	LabelAngle  string     `xml:"label_angle,omitempty"`
 	From        string     `xml:"from,omitempty"`
 	To          string     `xml:"to,omitempty"`
+	ScrollX     float64    `xml:"scroll_x,attr,omitempty"`
+	ScrollY     float64    `xml:"scroll_y,attr,omitempty"`
 	Points      *[]*Point  `xml:"pts>pt"`
 	NavAction   *NavAction `xml:"link"`
 	Image       *Image     `xml:"image"`
+	Children    []*Display `xml:",any,omitempty"`
+	Content     string     `xml:",chardata"`
 }
 
 type NavAction struct {
-	Target string  `xml:"target,attr"`
-	X      float64 `xml:"x,attr"`
-	Y      float64 `xml:"y,attr"`
+	Target string `xml:"target,attr"`
+	Point
+	Link string `xml:",innerxml"`
 }
 
 type Image struct {
 	XMLName xml.Name `xml:"image"`
-	Width   float64  `xml:"width,attr"`
-	Height  float64  `xml:"height,attr"`
-	Data    string   `xml:",chardata"`
-}
-
-type Point struct {
-	XMLName xml.Name `xml:"pt"`
-	X       float64  `xml:"x,attr"`
-	Y       float64  `xml:"y,attr"`
+	Size
+	Data string `xml:",chardata"`
 }
 
 // UUIDv4 returns a version 4 (random) variant of a UUID, or an error
