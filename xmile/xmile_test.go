@@ -9,7 +9,9 @@ import (
 	"bytes"
 	"fmt"
 	xmile "github.com/bpowers/go-xmile/compat"
+	"github.com/bpowers/go-xmile/smile"
 	"io/ioutil"
+	"log"
 	"os"
 	"strings"
 	"testing"
@@ -74,21 +76,32 @@ func normalizeNames(f *xmile.File) {
 func writeDot(f *xmile.File) error {
 	normalizeNames(f)
 
-	var data DotData
+	for _, m := range f.Models {
+		for _, v := range m.Variables {
+			log.Printf("parsing (%s, '%s')", v.Name, v.Eqn)
+			expr, err := smile.Parse(v.Name, v.Eqn)
+			if err != nil {
+				return fmt.Errorf("smile.Parse(%s, '%s'): %s", v.Name, v.Eqn, err)
+			}
+			_ = expr
+		}
 
-	var buf bytes.Buffer
-	tmpl := template.New("model.dot")
-	if _, err := tmpl.Parse(dotTmpl); err != nil {
-		return fmt.Errorf("Parse(dotTmpl): %s", err)
-	}
-	if err := tmpl.Execute(&buf, &data); err != nil {
-		return fmt.Errorf("Execute: %s", err)
-	}
+		var data DotData
 
-	w := bufio.NewWriter(os.Stderr)
-	defer w.Flush()
-	w.Write(buf.Bytes())
-	w.Write([]byte("\n"))
+		var buf bytes.Buffer
+		tmpl := template.New("model.dot")
+		if _, err := tmpl.Parse(dotTmpl); err != nil {
+			return fmt.Errorf("tmpl.Parse(dotTmpl): %s", err)
+		}
+		if err := tmpl.Execute(&buf, &data); err != nil {
+			return fmt.Errorf("tmpl.Execute: %s", err)
+		}
+
+		w := bufio.NewWriter(os.Stderr)
+		defer w.Flush()
+		w.Write(buf.Bytes())
+		w.Write([]byte("\n"))
+	}
 
 	return nil
 }
