@@ -73,18 +73,37 @@ func normalizeNames(f *xmile.File) {
 	}
 }
 
+func varMap(m *xmile.Model) map[string]*xmile.Variable {
+	vm := make(map[string]*xmile.Variable)
+	for _, v := range m.Variables {
+		vm[normalizeName(v.Name)] = v
+	}
+	return vm
+}
+
+func refs(v *xmile.Variable) ([]string, error) {
+	expr, err := smile.Parse(v.Name, v.Eqn)
+	if err != nil {
+		return nil, fmt.Errorf("smile.Parse(%s, '%s'): %s", v.Name, v.Eqn, err)
+	}
+	_ = expr
+	return nil, nil
+}
+
 func writeDot(f *xmile.File) error {
 	normalizeNames(f)
 
 	for _, m := range f.Models {
+		vm := varMap(m)
 		for _, v := range m.Variables {
-			log.Printf("parsing (%s, '%s')", v.Name, v.Eqn)
-			expr, err := smile.Parse(v.Name, v.Eqn)
+			outs, err := refs(v)
+			log.Printf("var %s refs %v", v.Name, outs)
 			if err != nil {
-				return fmt.Errorf("smile.Parse(%s, '%s'): %s", v.Name, v.Eqn, err)
+				return fmt.Errorf("refs(%s,'%s'): %s", v.Name, v.Eqn, err)
 			}
-			_ = expr
+			_ = outs
 		}
+		_ = vm
 
 		var data DotData
 
