@@ -86,8 +86,23 @@ func refs(v *xmile.Variable) ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("smile.Parse(%s, '%s'): %s", v.Name, v.Eqn, err)
 	}
-	_ = expr
-	return nil, nil
+	outs := make([]string, 0)
+	var fnNameNext bool
+	smile.Inspect(expr, func(n smile.Node) bool {
+		if fnNameNext {
+			fnNameNext = false
+			return true
+		}
+
+		switch e := n.(type) {
+		case *smile.CallExpr:
+			fnNameNext = true
+		case *smile.Ident:
+			outs = append(outs, normalizeName(e.Name))
+		}
+		return true
+	})
+	return outs, nil
 }
 
 func writeDot(f *xmile.File) error {
