@@ -7,8 +7,9 @@ package xmile_test
 import (
 	"bufio"
 	"bytes"
+	"encoding/xml"
 	"fmt"
-	xmile "github.com/bpowers/go-xmile/compat"
+	compat "github.com/bpowers/go-xmile/compat"
 	"github.com/bpowers/go-xmile/smile"
 	"io/ioutil"
 	"log"
@@ -65,7 +66,7 @@ func normalizeName(n string) string {
 	return n
 }
 
-func normalizeNames(f *xmile.File) {
+func normalizeNames(f *compat.File) {
 	for _, m := range f.Models {
 		for _, v := range m.Variables {
 			v.Name = normalizeName(v.Name)
@@ -73,15 +74,15 @@ func normalizeNames(f *xmile.File) {
 	}
 }
 
-func varMap(m *xmile.Model) map[string]*xmile.Variable {
-	vm := make(map[string]*xmile.Variable)
+func varMap(m *compat.Model) map[string]*compat.Variable {
+	vm := make(map[string]*compat.Variable)
 	for _, v := range m.Variables {
 		vm[normalizeName(v.Name)] = v
 	}
 	return vm
 }
 
-func refs(v *xmile.Variable) ([]string, error) {
+func refs(v *compat.Variable) ([]string, error) {
 	expr, err := smile.Parse(v.Name, v.Eqn)
 	if err != nil {
 		return nil, fmt.Errorf("smile.Parse(%s, '%s'): %s", v.Name, v.Eqn, err)
@@ -105,7 +106,7 @@ func refs(v *xmile.Variable) ([]string, error) {
 	return outs, nil
 }
 
-func writeDot(f *xmile.File) error {
+func writeDot(f *compat.File) error {
 	normalizeNames(f)
 
 	for _, m := range f.Models {
@@ -140,16 +141,15 @@ func writeDot(f *xmile.File) error {
 	return nil
 }
 
-/*
 func TestRead(t *testing.T) {
 	contents, err := ioutil.ReadFile("../models/pred_prey.stmx")
 	if err != nil {
 		t.Fatalf("ioutil.ReadFile: %s", err)
 	}
 
-	f, err := xmile.ReadFile(contents)
+	f, err := compat.ReadFile(contents)
 	if err != nil {
-		t.Fatalf("xmile.ReadFile: %s", err)
+		t.Fatalf("compat.ReadFile: %s", err)
 	}
 
 	output, err := xml.MarshalIndent(f, "", "    ")
@@ -157,25 +157,26 @@ func TestRead(t *testing.T) {
 		t.Fatalf("xml.MarshalIndent: %s", err)
 	}
 
-	os.Stderr.Write([]byte(xmile.XMLDeclaration + "\n"))
+	os.Stderr.Write([]byte(compat.XMLDeclaration + "\n"))
 	os.Stderr.Write(output)
 	os.Stderr.Write([]byte("\n"))
 }
-*/
 
+/*
 func TestDot(t *testing.T) {
 	contents, err := ioutil.ReadFile("../models/pred_prey.stmx")
 	if err != nil {
 		t.Fatalf("ioutil.ReadFile: %s", err)
 	}
 
-	f, err := xmile.ReadFile(contents)
+	f, err := compat.ReadFile(contents)
 	if err != nil {
-		t.Fatalf("xmile.ReadFile: %s", err)
+		t.Fatalf("compat.ReadFile: %s", err)
 	}
 
-	f.Models[0].Interface = xmile.View{}
+	f.Models[0].Interface = compat.View{}
 	if err := writeDot(f); err != nil {
 		t.Fatalf("writeDot: %s", err)
 	}
 }
+*/

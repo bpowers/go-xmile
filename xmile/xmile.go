@@ -151,7 +151,7 @@ type Variable struct {
 	Name     string   `xml:"name,attr"`
 	Doc      string   `xml:"doc,omitempty"`
 	Eqn      string   `xml:"eqn"`
-	NonNeg   *Exister `xml:"non_negative"`      // stock-only
+	NonNeg   *Exister `xml:"non_negative"`      // stock,(uni-)flow
 	Inflows  []string `xml:"inflow,omitempty"`  // empty for non-stocks
 	Outflows []string `xml:"outflow,omitempty"` // empty for non-stocks
 	Units    string   `xml:"units,omitempty"`
@@ -192,6 +192,9 @@ type Style struct {
 	BorderWidth string `xml:"border-width,attr,omitempty"`
 }
 
+// BUG(bp) from and to are attributes on graph, subelements on
+// connector.  The go marshaler can't handle this inconsistancy.
+//
 // Display represents a visual entity in a view, such as a stock,
 // flow, button or graph.
 type Display struct {
@@ -201,6 +204,8 @@ type Display struct {
 	UID             string     `xml:"uid,attr,omitempty"`                 // BUG(bp) should this be an int?
 	Title           string     `xml:"title,attr,omitempty"`               // graph
 	Type            string     `xml:"type,attr,omitempty"`                // pad,graph
+	Cleared         string     `xml:"cleared,attr,omitempty"`             // pad,graph
+	TimePrecision   int        `xml:"time_precision,attr,omitempty"`      // pad,graph
 	PadPageVisible  int        `xml:"visible_index,attr,omitempty"`       // pad
 	Appearance      string     `xml:"appearance,attr,omitempty"`          // button,text_box
 	ShowGrid        bool       `xml:"show_grid,attr,omitempty"`           // graph
@@ -219,6 +224,7 @@ type Display struct {
 	SeperatorK      bool       `xml:"thousands_separator,attr,omitempty"` // lamp
 	ShowName        bool       `xml:"show_name,attr,omitempty"`           // lamp
 	RetainEndingVal bool       `xml:"retain_ending_value,attr,omitempty"` // lamp
+	Zones           *[]Zone    `xml:"zones>zone"`                         // lamp
 	ScrollX         float64    `xml:"scroll_x,attr,omitempty"`            // chapter (storytelling)
 	ScrollY         float64    `xml:"scroll_y,attr,omitempty"`            // chapter (storytelling)
 	EntRef          *EntRef    `xml:"entity,omitempty"`                   // graph/plot
@@ -228,6 +234,13 @@ type Display struct {
 	Image           *Image     `xml:"image"`                              // graphics_frame
 	Children        []*Display `xml:",any,omitempty"`                     // button,popup,lamp,container
 	Content         string     `xml:",chardata"`                          // text_box
+}
+
+type Zone struct {
+	Type  string  `xml:"type,attr"`
+	Color string  `xml:"color,attr"`
+	Min   float64 `xml:"min"`
+	Max   float64 `xml:"max"`
 }
 
 type EntRef struct {

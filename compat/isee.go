@@ -75,7 +75,7 @@ type View struct {
 	PageCols        int              `xml:"page_cols,attr,omitempty"`
 	PageSequence    string           `xml:"page_sequence,attr,omitempty"`
 	ReportFlows     string           `xml:"report_flows,attr,omitempty"`
-	ShowPages       bool             `xml:"show_pages,attr,omitempty"`
+	ShowPages       bool             `xml:"show_pages,attr,omitempty"` // BUG(bp) default (omitted) when true
 	ShowValsOnHover bool             `xml:"show_values_on_hover,attr,omitempty"`
 	ConverterSize   string           `xml:"converter_size,attr,omitempty"`
 }
@@ -130,21 +130,24 @@ func NewFile(level int, name string) *File {
 // there is a slight impedence mismatch between the spec & the go xml
 // marshaler.  cleanIseeDisplayTag works to clean up artifacts related
 // to this when reading in <display> tags.
-func cleanIseeDisplayTag(d *xmile.Display) {
+func cleanIseeDisplayTag(d *xmile.Display, inNS bool) {
 	d.XMLName.Space = ""
 	switch d.XMLName.Local {
-	case "text_box", "menu_action":
-	case "item":
-		d.XMLName.Space = "isee"
-	case "story", "chapter", "group", "annotation":
-		d.XMLName.Space = "isee"
-		d.Content = ""
+	case "text_box", "menu_action", "item":
+		// only items with valid content
+	case "story":
+		inNS = true
+		fallthrough
 	default:
 		d.Content = ""
 	}
 
+	if inNS && d.XMLName.Local != "text_box" {
+		d.XMLName.Space = "isee"
+	}
+
 	for _, c := range d.Children {
-		cleanIseeDisplayTag(c)
+		cleanIseeDisplayTag(c, inNS)
 	}
 }
 
@@ -175,13 +178,13 @@ func ReadFile(contents []byte) (*File, error) {
 		m.Interface.XMLName.Space = ""
 		for _, v := range m.Variables {
 			v.XMLName.Space = ""
-			cleanIseeDisplayTag(v.Display)
+			cleanIseeDisplayTag(v.Display, false)
 		}
 		for _, v := range m.Display.Ents {
-			cleanIseeDisplayTag(v)
+			cleanIseeDisplayTag(v, false)
 		}
 		for _, v := range m.Interface.Ents {
-			cleanIseeDisplayTag(v)
+			cleanIseeDisplayTag(v, false)
 		}
 		m.Interface.SimDelay = nil
 	}
