@@ -15,15 +15,15 @@ func ExampleNewFile() {
 	m := &xmile.Model{
 		Variables: []*xmile.Variable{
 			&xmile.Variable{
-				XMLName:  xml.Name{Local: "flow"},
-				Name:     "migrations",
-				Equation: "10",
-				Units:    "people/year",
+				XMLName: xml.Name{Local: "flow"},
+				Name:    "migrations",
+				Eqn:     "10",
+				Units:   "people/year",
 			},
 			&xmile.Variable{
 				XMLName:  xml.Name{Local: "stock"},
 				Name:     "population",
-				Equation: "100",
+				Eqn:      "100",
 				Inflows:  []string{"births", "migrations"},
 				Outflows: []string{"deaths"},
 				Units:    "people",
@@ -48,7 +48,7 @@ func ExampleNewFile() {
 
 	// Output:
 	//<?xml version="1.0" encoding="utf-8" ?>
-	//<xmile version="1.0" level="1">
+	//<xmile xmlns="http://www.systemdynamics.org/XMILE" version="1.0" level="1">
 	//     <header>
 	//         <name>hello xworld</name>
 	//         <uuid>7a435517-ce5d-c816-9ec5-b34e44ec4fee</uuid>

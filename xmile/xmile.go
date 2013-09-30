@@ -16,21 +16,81 @@ const XMLDeclaration = `<?xml version="1.0" encoding="utf-8" ?>`
 
 // File represents the entire contents of a XMILE document.
 type File struct {
-	XMLName xml.Name `xml:"xmile"`
-	Version string   `xml:"version,attr"`
-	Level   int      `xml:"level,attr"`
-	Header  Header   `xml:"header"`
-	SimSpec SimSpec  `xml:"sim_specs"`
-	Models  []*Model `xml:",omitempty"`
+	XMLName    xml.Name     `xml:"http://www.systemdynamics.org/XMILE xmile"`
+	Version    string       `xml:"version,attr"`
+	Level      int          `xml:"level,attr"`
+	Header     Header       `xml:"header"`
+	SimSpec    SimSpec      `xml:"sim_specs"`
+	Dimensions []*Dimension `xml:"dimensions,omitempty>dim,omitempty"`
+	ModelUnits *ModelUnits  `xml:"model_units"`
+	EqnPrefs   *EqnPrefs    `xml:"equation_prefs"`
+	Models     []*Model     `xml:"model,omitempty"`
+}
+
+type EqnPrefs struct {
+	XMLName xml.Name
+	OrderBy string `xml:"order_by,attr"`
+}
+
+type ModelUnits struct {
+}
+
+// Point represents a position in a 2D plane
+type Point struct {
+	X float64 `xml:"x,attr"`
+	Y float64 `xml:"y,attr"`
+}
+
+// Size represents an area on a 2D plane
+type Size struct {
+	Width  float64 `xml:"width,attr,omitempty"`
+	Height float64 `xml:"height,attr,omitempty"`
+}
+
+// Rect is an area with a position.
+type Rect struct {
+	Point
+	Size
+}
+
+type Window struct {
+	XMLName xml.Name
+	Size
+	Orientation string `xml:"orientation,attr,omitempty"`
+}
+
+// TODO(bp) implement and document
+type Security struct {
+	XMLName xml.Name
 }
 
 // Header contains metadata about a given XMILE File.
 type Header struct {
+	Smile   *Smile  `xml:"smile"`
 	Name    string  `xml:"name"`
 	UUID    string  `xml:"uuid"`
 	Vendor  string  `xml:"vendor"`
 	Product Product `xml:"product"`
 }
+
+type Dimension struct {
+	XMLName xml.Name `xml:"dim"`
+	Name    string   `xml:"name,attr"`
+	Size    string   `xml:"size,attr"`
+}
+
+// Smile contains information on the features used in this model.
+type Smile struct {
+	Version       string   `xml:"version,attr,omitempty"`
+	UsesArrays    int      `xml:"uses_arrays,omitempty"`
+	UsesQueue     *Exister `xml:"uses_queue"`
+	UsesConveyer  *Exister `xml:"uses_conveyer"`
+	UsesSubmodels *Exister `xml:"uses_submodels"`
+}
+
+// Exister is used as a pointer when we want to make sure an empty tag
+// exists.
+type Exister string
 
 // Product contains information about the software that created this
 // XMILE document.
@@ -65,8 +125,21 @@ type Model struct {
 // of a model, such as a stock and flow diagram, a causal loop
 // diagram, or the iThink interface layer.
 type View struct {
-	XMLName xml.Name `xml:"view"`
-	Name    string   `xml:"name,attr,omitempty"`
+	XMLName         xml.Name
+	Name            string     `xml:"name,attr,omitempty"`
+	Ents            []*Display `xml:",any,omitempty"`
+	ScrollX         float64    `xml:"scroll_x,attr"`
+	ScrollY         float64    `xml:"scroll_y,attr"`
+	Zoom            float64    `xml:"zoom,attr"`
+	PageWidth       int        `xml:"page_width,attr,omitempty"`
+	PageHeight      int        `xml:"page_height,attr,omitempty"`
+	PageRows        int        `xml:"page_rows,attr,omitempty"`
+	PageCols        int        `xml:"page_cols,attr,omitempty"`
+	PageSequence    string     `xml:"page_sequence,attr,omitempty"`
+	ReportFlows     string     `xml:"report_flows,attr,omitempty"`
+	ShowPages       bool       `xml:"show_pages,attr,omitempty"`
+	ShowValsOnHover bool       `xml:"show_values_on_hover,attr,omitempty"`
+	ConverterSize   string     `xml:"converter_size,attr,omitempty"`
 }
 
 // Variable is the definition of a model entity.  Some fields, such as
@@ -76,10 +149,95 @@ type View struct {
 type Variable struct {
 	XMLName  xml.Name
 	Name     string   `xml:"name,attr"`
-	Equation string   `xml:"eqn"`
+	Doc      string   `xml:"doc,omitempty"`
+	Eqn      string   `xml:"eqn"`
+	NonNeg   *Exister `xml:"non_negative"`
 	Inflows  []string `xml:"inflow,omitempty"`  // empty for non-stocks
 	Outflows []string `xml:"outflow,omitempty"` // empty for non-stocks
-	Units    string   `xml:"units"`
+	Units    string   `xml:"units,omitempty"`
+	GF       *GF      `xml:"gf"`
+}
+
+type GF struct {
+	XMLName  xml.Name `xml:"gf"`
+	Discrete bool     `xml:"discrete,attr"`
+	XPoints  string   `xml:"xpts"`
+	YPoints  string   `xml:"ypts"`
+	XScale   Scale    `xml:"xscale"`
+	YScale   Scale    `xml:"yscale"`
+}
+
+type Scale struct {
+	Min float64 `xml:"min,attr"`
+	Max float64 `xml:"max,attr"`
+}
+
+type Style struct {
+	Background  string `xml:"background,attr,omitempty"`
+	Color       string `xml:"color,attr,omitempty"`
+	FontFamily  string `xml:"font-family,attr,omitempty"`
+	FontSize    string `xml:"font-size,attr,omitempty"`
+	FontStyle   string `xml:"font-style,attr,omitempty"`
+	FontWeight  string `xml:"font-weight,attr,omitempty"`
+	TextAlign   string `xml:"text-align,attr,omitempty"`
+	TextDeco    string `xml:"text-decoration,attr,omitempty"`
+	Margin      string `xml:"margin,attr,omitempty"`
+	Padding     string `xml:"padding,attr,omitempty"`
+	BorderColor string `xml:"border-color,attr,omitempty"`
+	BorderStyle string `xml:"border-style,attr,omitempty"`
+	BorderWidth string `xml:"border-width,attr,omitempty"`
+}
+
+type Display struct {
+	XMLName xml.Name
+	Rect
+	Style
+	UID             string     `xml:"uid,attr,omitempty"` // BUG(bp) should be int?
+	Title           string     `xml:"title,attr,omitempty"`
+	Type            string     `xml:"type,attr,omitempty"`
+	ZIndex          int        `xml:"visible_index,attr,omitempty"`
+	Appearance      string     `xml:"appearance,attr,omitempty"` // button,text_box
+	ShowGrid        bool       `xml:"show_grid,attr,omitempty"`
+	StyleStr        string     `xml:"style,attr,omitempty"`     // button
+	LockText        bool       `xml:"lock_text,attr,omitempty"` // text_box
+	Fill            string     `xml:"fill,attr,omitempty"`
+	Label           string     `xml:"label,attr,omitempty"`
+	LabelSide       string     `xml:"label_side,omitempty"`
+	LabelAngle      string     `xml:"label_angle,omitempty"`
+	From            string     `xml:"from,omitempty"`         // connector
+	To              string     `xml:"to,omitempty"`           // connector
+	IconOf          string     `xml:"icon_of,attr,omitempty"` // graph-pad
+	PenWidth        int        `xml:"pen_width,attr,omitempty"`
+	Precision       int        `xml:"precision,attr,omitempty"`
+	Units           string     `xml:"percentage,attr,omitempty"`
+	SeperatorK      bool       `xml:"thousands_separator,attr,omitempty"`
+	ShowName        bool       `xml:"show_name,attr,omitempty"`
+	RetainEndingVal bool       `xml:"retain_ending_value,attr,omitempty"`
+	ScrollX         float64    `xml:"scroll_x,attr,omitempty"`
+	ScrollY         float64    `xml:"scroll_y,attr,omitempty"`
+	EntRef          *EntRef    `xml:"entity,omitempty"`
+	Points          *[]*Point  `xml:"pts>pt"`
+	NavAction       *NavAction `xml:"link"`
+	Image           *Image     `xml:"image"`
+	Children        []*Display `xml:",any,omitempty"`
+	Content         string     `xml:",chardata"`
+}
+
+type EntRef struct {
+	Name    string `xml:"name,attr,omitempty"`
+	Content string `xml:",chardata"`
+}
+
+type NavAction struct {
+	Target string `xml:"target,attr"`
+	Point
+	Link string `xml:",innerxml"`
+}
+
+type Image struct {
+	XMLName xml.Name `xml:"image"`
+	Size
+	Data string `xml:",chardata"`
 }
 
 // UUIDv4 returns a version 4 (random) variant of a UUID, or an error
