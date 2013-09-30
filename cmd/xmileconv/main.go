@@ -96,7 +96,7 @@ func main() {
 		log.Fatalf("xml.MarshalIndent: %s", err)
 	}
 
-	os.Stderr.Write([]byte(compat.XMLDeclaration + "\n"))
-	os.Stderr.Write(output)
-	os.Stderr.Write([]byte("\n"))
+	os.Stdout.Write([]byte(compat.XMLDeclaration + "\n"))
+	os.Stdout.Write(output)
+	os.Stdout.Write([]byte("\n"))
 }
