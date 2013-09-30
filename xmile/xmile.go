@@ -192,9 +192,6 @@ type Style struct {
 	BorderWidth string `xml:"border-width,attr,omitempty"`
 }
 
-// BUG(bp) from and to are attributes on graph, subelements on
-// connector.  The go marshaler can't handle this inconsistancy.
-//
 // Display represents a visual entity in a view, such as a stock,
 // flow, button or graph.
 type Display struct {
@@ -202,13 +199,7 @@ type Display struct {
 	Rect
 	Style
 	UID             string     `xml:"uid,attr,omitempty"`                 // BUG(bp) should this be an int?
-	Title           string     `xml:"title,attr,omitempty"`               // graph
-	Type            string     `xml:"type,attr,omitempty"`                // pad,graph
-	Cleared         string     `xml:"cleared,attr,omitempty"`             // pad,graph
-	TimePrecision   int        `xml:"time_precision,attr,omitempty"`      // pad,graph
-	PadPageVisible  int        `xml:"visible_index,attr,omitempty"`       // pad
 	Appearance      string     `xml:"appearance,attr,omitempty"`          // button,text_box
-	ShowGrid        bool       `xml:"show_grid,attr,omitempty"`           // graph
 	StyleStr        string     `xml:"style,attr,omitempty"`               // button
 	LockText        bool       `xml:"lock_text,attr,omitempty"`           // text_box
 	Fill            string     `xml:"fill,attr,omitempty"`                // graphics_frame
@@ -227,8 +218,8 @@ type Display struct {
 	Min             float64    `xml:"min,attr,omitempty"`                 // knob
 	Max             float64    `xml:"max,attr,omitempty"`                 // knob
 	Increment       int        `xml:"increment,attr,omitempty"`           // knob
-	Plots           *[]Plot    `xml:"plot"`                               // graph
-	DateTime        int        `xml:"date_time,attr,omitempty"`           // graph BUG(bp) missing isee:
+	PadPageVisible  int        `xml:"visible_index,attr,omitempty"`       // stacked_container
+	Graphs          *[]Graph   `xml:"graph"`                              // stacked_container
 	ScrollX         float64    `xml:"scroll_x,attr,omitempty"`            // chapter (storytelling)
 	ScrollY         float64    `xml:"scroll_y,attr,omitempty"`            // chapter (storytelling)
 	EntRef          *EntRef    `xml:"entity,omitempty"`                   // graph/plot
@@ -238,6 +229,21 @@ type Display struct {
 	Image           *Image     `xml:"image"`                              // graphics_frame
 	Children        []*Display `xml:",any,omitempty"`                     // button,popup,lamp,container
 	Content         string     `xml:",chardata"`                          // text_box
+}
+
+type Graph struct {
+	Type            string  `xml:"type,attr"`
+	Title           string  `xml:"title,attr"`
+	Background      string  `xml:"background,attr"`
+	ShowGrid        bool    `xml:"show_grid,attr"`
+	NumbersOnPlots  bool    `xml:"numbers_on_plots,attr"`
+	UseFiveSegments bool    `xml:"use_five_segments,attr"`   // BUG(bp) isee ns
+	DateTime        int     `xml:"date_time,attr,omitempty"` // BUG(bp) isee ns
+	Cleared         string  `xml:"cleared,attr"`
+	TimePrecision   int     `xml:"time_precision,attr"`
+	From            string  `xml:"from,attr,omitempty"` // x-axis/time
+	To              string  `xml:"to,attr,omitempty"`   // x-axis/time
+	Plots           *[]Plot `xml:"plot"`
 }
 
 type Plot struct {

@@ -64,12 +64,12 @@ type Model struct {
 type View struct {
 	XMLName         xml.Name
 	Name            string           `xml:"name,attr,omitempty"`
+	SimDelay        float64          `xml:"simulation_delay,omitempty"`
+	Pages           *Pages           `xml:"pages"`
 	Ents            []*xmile.Display `xml:",any,omitempty"`
 	ScrollX         float64          `xml:"scroll_x,attr"`
 	ScrollY         float64          `xml:"scroll_y,attr"`
 	Zoom            float64          `xml:"zoom,attr"`
-	SimDelay        *SimDelay        `xml:"simulation_delay"`
-	Pages           *Pages           `xml:"pages"`
 	PageWidth       int              `xml:"page_width,attr,omitempty"`
 	PageHeight      int              `xml:"page_height,attr,omitempty"`
 	PageRows        int              `xml:"page_rows,attr,omitempty"`
@@ -87,11 +87,6 @@ type Pages struct {
 	ColCount int  `xml:"column_count,attr"`
 	HomePage int  `xml:"home_page,attr"`
 	xmile.Size
-}
-
-// TODO(bp) implement
-type SimDelay struct {
-	Content float64 `xml:",chardata"`
 }
 
 // Variable is the definition of a model entity.  Some fields, such as
@@ -196,7 +191,6 @@ func ReadFile(contents []byte) (*File, error) {
 		for _, v := range m.Interface.Ents {
 			cleanIseeDisplayTag(v, false)
 		}
-		m.Interface.SimDelay = nil
 	}
 
 	return f, nil
