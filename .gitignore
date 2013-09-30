@@ -1,3 +1,5 @@
 *~
 build/
 cmd/xmileconv/xmileconv
+xmile/*.itmx
+out/
