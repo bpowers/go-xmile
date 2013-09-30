@@ -17,7 +17,8 @@ import (
 // reuse.
 const XMLDeclaration = `<?xml version="1.0" encoding="utf-8" ?>`
 
-// File represents the entire contents of a XMILE document.
+// File represents the entire contents of a XMILE document as
+// implemented by STELLA & iThink version ~10.0.3
 type File struct {
 	XMLName    xml.Name           `xml:"http://www.systemdynamics.org/XMILE xmile"`
 	Version    string             `xml:"version,attr"`
@@ -32,6 +33,7 @@ type File struct {
 	Models     []*Model           `xml:"model,omitempty"`
 }
 
+// IseePrefs contains preferences used by STELLA and iThink
 type IseePrefs struct {
 	XMLName                xml.Name
 	Layer                  string         `xml:"layer,attr"`
@@ -78,6 +80,7 @@ type View struct {
 	ConverterSize   string           `xml:"converter_size,attr,omitempty"`
 }
 
+// TODO(bp) implement
 type SimDelay struct {
 }
 
@@ -99,7 +102,8 @@ type Variable struct {
 }
 
 // NewFile returns a new File object of the given XMILE compliance
-// level and name, along with a new UUID.
+// level and name, along with a new UUID.  If you have a file on disk
+// you are looking to process, please see ReadFile.
 func NewFile(level int, name string) *File {
 	id, err := xmile.UUIDv4()
 	if err != nil {
@@ -123,6 +127,9 @@ func NewFile(level int, name string) *File {
 	return f
 }
 
+// there is a slight impedence mismatch between the spec & the go xml
+// marshaler.  cleanIseeDisplayTag works to clean up artifacts related
+// to this when reading in <display> tags.
 func cleanIseeDisplayTag(d *xmile.Display) {
 	d.XMLName.Space = ""
 	switch d.XMLName.Local {
@@ -141,6 +148,11 @@ func cleanIseeDisplayTag(d *xmile.Display) {
 	}
 }
 
+// ReadFile takes a block of xml content that represents a XMILE file,
+// as implemented by iThink/STELLA v10.0.3, and returns a File
+// structure, or an error.  The hope is that iThink files rountripped
+// through this function will remain readable by iThink.  If not,
+// please report it.
 func ReadFile(contents []byte) (*File, error) {
 	f := new(File)
 	if err := xml.Unmarshal(contents, f); err != nil {

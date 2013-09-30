@@ -151,13 +151,15 @@ type Variable struct {
 	Name     string   `xml:"name,attr"`
 	Doc      string   `xml:"doc,omitempty"`
 	Eqn      string   `xml:"eqn"`
-	NonNeg   *Exister `xml:"non_negative"`
+	NonNeg   *Exister `xml:"non_negative"`      // stock-only
 	Inflows  []string `xml:"inflow,omitempty"`  // empty for non-stocks
 	Outflows []string `xml:"outflow,omitempty"` // empty for non-stocks
 	Units    string   `xml:"units,omitempty"`
-	GF       *GF      `xml:"gf"`
+	GF       *GF      `xml:"gf"` // nil if one doesn't exist
 }
 
+// GF contains the definition of a graphical function associated with
+// a variable.
 type GF struct {
 	XMLName  xml.Name `xml:"gf"`
 	Discrete bool     `xml:"discrete,attr"`
@@ -172,6 +174,8 @@ type Scale struct {
 	Max float64 `xml:"max,attr"`
 }
 
+// Style contains information about the visual appearance of a display
+// entity.
 type Style struct {
 	Background  string `xml:"background,attr,omitempty"`
 	Color       string `xml:"color,attr,omitempty"`
@@ -188,39 +192,42 @@ type Style struct {
 	BorderWidth string `xml:"border-width,attr,omitempty"`
 }
 
+// Display represents a visual entity in a view, such as a stock,
+// flow, button or graph.
 type Display struct {
 	XMLName xml.Name
 	Rect
 	Style
-	UID             string     `xml:"uid,attr,omitempty"` // BUG(bp) should be int?
-	Title           string     `xml:"title,attr,omitempty"`
-	Type            string     `xml:"type,attr,omitempty"`
-	ZIndex          int        `xml:"visible_index,attr,omitempty"`
-	Appearance      string     `xml:"appearance,attr,omitempty"` // button,text_box
-	ShowGrid        bool       `xml:"show_grid,attr,omitempty"`
-	StyleStr        string     `xml:"style,attr,omitempty"`     // button
-	LockText        bool       `xml:"lock_text,attr,omitempty"` // text_box
-	Fill            string     `xml:"fill,attr,omitempty"`
-	Label           string     `xml:"label,attr,omitempty"`
-	LabelSide       string     `xml:"label_side,omitempty"`
-	LabelAngle      string     `xml:"label_angle,omitempty"`
-	From            string     `xml:"from,omitempty"`         // connector
-	To              string     `xml:"to,omitempty"`           // connector
-	IconOf          string     `xml:"icon_of,attr,omitempty"` // graph-pad
-	PenWidth        int        `xml:"pen_width,attr,omitempty"`
-	Precision       int        `xml:"precision,attr,omitempty"`
-	Units           string     `xml:"percentage,attr,omitempty"`
-	SeperatorK      bool       `xml:"thousands_separator,attr,omitempty"`
-	ShowName        bool       `xml:"show_name,attr,omitempty"`
-	RetainEndingVal bool       `xml:"retain_ending_value,attr,omitempty"`
-	ScrollX         float64    `xml:"scroll_x,attr,omitempty"`
-	ScrollY         float64    `xml:"scroll_y,attr,omitempty"`
-	EntRef          *EntRef    `xml:"entity,omitempty"`
-	Points          *[]*Point  `xml:"pts>pt"`
-	NavAction       *NavAction `xml:"link"`
-	Image           *Image     `xml:"image"`
-	Children        []*Display `xml:",any,omitempty"`
-	Content         string     `xml:",chardata"`
+	UID             string     `xml:"uid,attr,omitempty"`                 // BUG(bp) should this be an int?
+	Title           string     `xml:"title,attr,omitempty"`               // graph
+	Type            string     `xml:"type,attr,omitempty"`                // pad,graph
+	PadPageVisible  int        `xml:"visible_index,attr,omitempty"`       // pad
+	Appearance      string     `xml:"appearance,attr,omitempty"`          // button,text_box
+	ShowGrid        bool       `xml:"show_grid,attr,omitempty"`           // graph
+	StyleStr        string     `xml:"style,attr,omitempty"`               // button
+	LockText        bool       `xml:"lock_text,attr,omitempty"`           // text_box
+	Fill            string     `xml:"fill,attr,omitempty"`                // graphics_frame
+	Label           string     `xml:"label,attr,omitempty"`               // stock,flow,aux
+	LabelSide       string     `xml:"label_side,omitempty"`               // stock,flow,aux
+	LabelAngle      string     `xml:"label_angle,omitempty"`              // stock,flow,aux
+	From            string     `xml:"from,omitempty"`                     // connector
+	To              string     `xml:"to,omitempty"`                       // connector
+	IconOf          string     `xml:"icon_of,attr,omitempty"`             // graph-pad
+	PenWidth        int        `xml:"pen_width,attr,omitempty"`           // graph/plot
+	Precision       int        `xml:"precision,attr,omitempty"`           // graph/plot,lamp
+	Units           string     `xml:"units,attr,omitempty"`               // lamp
+	SeperatorK      bool       `xml:"thousands_separator,attr,omitempty"` // lamp
+	ShowName        bool       `xml:"show_name,attr,omitempty"`           // lamp
+	RetainEndingVal bool       `xml:"retain_ending_value,attr,omitempty"` // lamp
+	ScrollX         float64    `xml:"scroll_x,attr,omitempty"`            // chapter (storytelling)
+	ScrollY         float64    `xml:"scroll_y,attr,omitempty"`            // chapter (storytelling)
+	EntRef          *EntRef    `xml:"entity,omitempty"`                   // graph/plot
+	Points          *[]*Point  `xml:"pts>pt"`                             // flow,connector
+	NavAction       *NavAction `xml:"link"`                               // button
+	MenuAction      string     `xml:"menu_action,omitempty"`              // button
+	Image           *Image     `xml:"image"`                              // graphics_frame
+	Children        []*Display `xml:",any,omitempty"`                     // button,popup,lamp,container
+	Content         string     `xml:",chardata"`                          // text_box
 }
 
 type EntRef struct {
