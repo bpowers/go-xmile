@@ -199,16 +199,13 @@ type Display struct {
 	Rect
 	Style
 	UID             string     `xml:"uid,attr,omitempty"`                 // BUG(bp) should this be an int?
-	Appearance      string     `xml:"appearance,attr,omitempty"`          // button,text_box
-	StyleStr        string     `xml:"style,attr,omitempty"`               // button
-	LockText        bool       `xml:"lock_text,attr,omitempty"`           // text_box
-	Fill            string     `xml:"fill,attr,omitempty"`                // graphics_frame
 	Label           string     `xml:"label,attr,omitempty"`               // stock,flow,aux
 	LabelSide       string     `xml:"label_side,omitempty"`               // stock,flow,aux
 	LabelAngle      string     `xml:"label_angle,omitempty"`              // stock,flow,aux
 	From            string     `xml:"from,omitempty"`                     // connector
 	To              string     `xml:"to,omitempty"`                       // connector
-	IconOf          string     `xml:"icon_of,attr,omitempty"`             // graph-pad
+	Points          *[]*Point  `xml:"pts>pt"`                             // flow,connector
+	IconOf          string     `xml:"icon_of,attr,omitempty"`             // graph-pad-icon
 	Precision       int        `xml:"precision,attr,omitempty"`           // lamp
 	Units           string     `xml:"units,attr,omitempty"`               // lamp
 	SeperatorK      bool       `xml:"thousands_separator,attr,omitempty"` // lamp
@@ -222,13 +219,15 @@ type Display struct {
 	Graphs          *[]Graph   `xml:"graph"`                              // stacked_container
 	ScrollX         float64    `xml:"scroll_x,attr,omitempty"`            // chapter (storytelling)
 	ScrollY         float64    `xml:"scroll_y,attr,omitempty"`            // chapter (storytelling)
-	EntRef          *EntRef    `xml:"entity,omitempty"`                   // graph/plot
-	Points          *[]*Point  `xml:"pts>pt"`                             // flow,connector
+	Fill            string     `xml:"fill,attr,omitempty"`                // graphics_frame
+	Image           *Image     `xml:"image"`                              // graphics_frame
 	NavAction       *NavAction `xml:"link"`                               // button
 	MenuAction      string     `xml:"menu_action,omitempty"`              // button
-	Image           *Image     `xml:"image"`                              // graphics_frame
-	Children        []*Display `xml:",any,omitempty"`                     // button,popup,lamp,container
+	StyleStr        string     `xml:"style,attr,omitempty"`               // button
+	Appearance      string     `xml:"appearance,attr,omitempty"`          // button,text_box
+	LockText        bool       `xml:"lock_text,attr,omitempty"`           // text_box
 	Content         string     `xml:",chardata"`                          // text_box
+	Children        []*Display `xml:",any,omitempty"`                     // button,popup,lamp,container
 }
 
 type Graph struct {

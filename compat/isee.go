@@ -138,7 +138,7 @@ func NewFile(level int, name string) *File {
 func cleanIseeDisplayTag(d *xmile.Display, inNS bool) {
 	d.XMLName.Space = ""
 	switch d.XMLName.Local {
-	case "text_box", "menu_action", "item":
+	case "text_box", "item":
 		// only items with valid content
 	case "story":
 		inNS = true
