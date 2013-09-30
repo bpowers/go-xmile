@@ -218,13 +218,14 @@ type Display struct {
 	From            string     `xml:"from,omitempty"`                     // connector
 	To              string     `xml:"to,omitempty"`                       // connector
 	IconOf          string     `xml:"icon_of,attr,omitempty"`             // graph-pad
-	PenWidth        int        `xml:"pen_width,attr,omitempty"`           // graph/plot
-	Precision       int        `xml:"precision,attr,omitempty"`           // graph/plot,lamp
+	Precision       int        `xml:"precision,attr,omitempty"`           // lamp
 	Units           string     `xml:"units,attr,omitempty"`               // lamp
 	SeperatorK      bool       `xml:"thousands_separator,attr,omitempty"` // lamp
 	ShowName        bool       `xml:"show_name,attr,omitempty"`           // lamp
 	RetainEndingVal bool       `xml:"retain_ending_value,attr,omitempty"` // lamp
 	Zones           *[]Zone    `xml:"zones>zone"`                         // lamp
+	Plots           *[]Plot    `xml:"plot"`                               // graph
+	DateTime        int        `xml:"date_time,attr,omitempty"`           // graph BUG(bp) missing isee:
 	ScrollX         float64    `xml:"scroll_x,attr,omitempty"`            // chapter (storytelling)
 	ScrollY         float64    `xml:"scroll_y,attr,omitempty"`            // chapter (storytelling)
 	EntRef          *EntRef    `xml:"entity,omitempty"`                   // graph/plot
@@ -234,6 +235,16 @@ type Display struct {
 	Image           *Image     `xml:"image"`                              // graphics_frame
 	Children        []*Display `xml:",any,omitempty"`                     // button,popup,lamp,container
 	Content         string     `xml:",chardata"`                          // text_box
+}
+
+type Plot struct {
+	PenWidth  int    `xml:"pen_width,attr"` // graph/plot
+	Precision int    `xml:"precision,attr"` // graph/plot,lamp
+	Index     int    `xml:"index"`
+	Color     string `xml:"color"`
+	ShowYAxis bool   `xml:"show_y_axis"`
+	Scale     *Scale `xml:"scale"`
+	Entity    EntRef `xml:"entity"`
 }
 
 type Zone struct {
