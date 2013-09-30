@@ -54,39 +54,8 @@ type Model struct {
 	XMLName   xml.Name    `xml:"model"`
 	Name      string      `xml:"name,attr,omitempty"`
 	Variables []*Variable `xml:",any,omitempty"`
-	Display   View        `xml:"display"`
-	Interface View        `xml:"interface"`
-}
-
-// View is a collection of objects representing the visual structure
-// of a model, such as a stock and flow diagram, a causal loop
-// diagram, or the iThink interface layer.
-type View struct {
-	XMLName         xml.Name
-	Name            string           `xml:"name,attr,omitempty"`
-	SimDelay        float64          `xml:"simulation_delay,omitempty"`
-	Pages           *Pages           `xml:"pages"`
-	Ents            []*xmile.Display `xml:",any,omitempty"`
-	ScrollX         float64          `xml:"scroll_x,attr"`
-	ScrollY         float64          `xml:"scroll_y,attr"`
-	Zoom            float64          `xml:"zoom,attr"`
-	PageWidth       int              `xml:"page_width,attr,omitempty"`
-	PageHeight      int              `xml:"page_height,attr,omitempty"`
-	PageRows        int              `xml:"page_rows,attr,omitempty"`
-	PageCols        int              `xml:"page_cols,attr,omitempty"`
-	PageSequence    string           `xml:"page_sequence,attr,omitempty"`
-	ReportFlows     string           `xml:"report_flows,attr,omitempty"`
-	ShowPages       bool             `xml:"show_pages,attr,omitempty"` // BUG(bp) default (omitted) when true
-	ShowValsOnHover bool             `xml:"show_values_on_hover,attr,omitempty"`
-	ConverterSize   string           `xml:"converter_size,attr,omitempty"`
-}
-
-type Pages struct {
-	Show     bool `xml:"show,attr"`
-	RowCount int  `xml:"row_count,attr"`
-	ColCount int  `xml:"column_count,attr"`
-	HomePage int  `xml:"home_page,attr"`
-	xmile.Size
+	Display   xmile.View  `xml:"display"`
+	Interface xmile.View  `xml:"interface"`
 }
 
 // Variable is the definition of a model entity.  Some fields, such as
@@ -94,16 +63,9 @@ type Pages struct {
 // types.  The type is determined by the tag name and is stored in
 // XMLName.Name.
 type Variable struct {
-	XMLName  xml.Name
-	Name     string         `xml:"name,attr"`
-	Doc      string         `xml:"doc,omitempty"`
-	Eqn      string         `xml:"eqn"`
-	NonNeg   *xmile.Exister `xml:"non_negative"`
-	Inflows  []string       `xml:"inflow,omitempty"`  // empty for non-stocks
-	Outflows []string       `xml:"outflow,omitempty"` // empty for non-stocks
-	Units    string         `xml:"units,omitempty"`
-	GF       *xmile.GF      `xml:"gf"`
-	Display  *xmile.Display `xml:"display"`
+	XMLName xml.Name
+	xmile.Variable
+	Display *xmile.Display `xml:"display"`
 }
 
 // NewFile returns a new File object of the given XMILE compliance

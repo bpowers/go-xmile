@@ -127,6 +127,8 @@ type Model struct {
 type View struct {
 	XMLName         xml.Name
 	Name            string     `xml:"name,attr,omitempty"`
+	SimDelay        float64    `xml:"simulation_delay,omitempty"`
+	Pages           *Pages     `xml:"pages"`
 	Ents            []*Display `xml:",any,omitempty"`
 	ScrollX         float64    `xml:"scroll_x,attr"`
 	ScrollY         float64    `xml:"scroll_y,attr"`
@@ -137,9 +139,18 @@ type View struct {
 	PageCols        int        `xml:"page_cols,attr,omitempty"`
 	PageSequence    string     `xml:"page_sequence,attr,omitempty"`
 	ReportFlows     string     `xml:"report_flows,attr,omitempty"`
-	ShowPages       bool       `xml:"show_pages,attr,omitempty"`
+	ShowPages       bool       `xml:"show_pages,attr,omitempty"` // BUG(bp) default (omitted) when true
 	ShowValsOnHover bool       `xml:"show_values_on_hover,attr,omitempty"`
 	ConverterSize   string     `xml:"converter_size,attr,omitempty"`
+}
+
+// FIXME: maybe isee specific?
+type Pages struct {
+	Show     bool `xml:"show,attr"`
+	RowCount int  `xml:"row_count,attr"`
+	ColCount int  `xml:"column_count,attr"`
+	HomePage int  `xml:"home_page,attr"`
+	Size
 }
 
 // Variable is the definition of a model entity.  Some fields, such as
@@ -212,6 +223,7 @@ type Display struct {
 	ShowName        bool       `xml:"show_name,attr,omitempty"`           // lamp
 	RetainEndingVal bool       `xml:"retain_ending_value,attr,omitempty"` // lamp
 	Zones           *[]Zone    `xml:"zones>zone"`                         // lamp
+	Entity          *EntRef    `xml:"entity"`                             // lamp,knob
 	Min             float64    `xml:"min,attr,omitempty"`                 // knob
 	Max             float64    `xml:"max,attr,omitempty"`                 // knob
 	Increment       int        `xml:"increment,attr,omitempty"`           // knob
