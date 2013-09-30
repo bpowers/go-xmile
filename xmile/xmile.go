@@ -224,6 +224,9 @@ type Display struct {
 	ShowName        bool       `xml:"show_name,attr,omitempty"`           // lamp
 	RetainEndingVal bool       `xml:"retain_ending_value,attr,omitempty"` // lamp
 	Zones           *[]Zone    `xml:"zones>zone"`                         // lamp
+	Min             float64    `xml:"min,attr,omitempty"`                 // knob
+	Max             float64    `xml:"max,attr,omitempty"`                 // knob
+	Increment       int        `xml:"increment,attr,omitempty"`           // knob
 	Plots           *[]Plot    `xml:"plot"`                               // graph
 	DateTime        int        `xml:"date_time,attr,omitempty"`           // graph BUG(bp) missing isee:
 	ScrollX         float64    `xml:"scroll_x,attr,omitempty"`            // chapter (storytelling)

@@ -68,7 +68,8 @@ type View struct {
 	ScrollX         float64          `xml:"scroll_x,attr"`
 	ScrollY         float64          `xml:"scroll_y,attr"`
 	Zoom            float64          `xml:"zoom,attr"`
-	SimDelay        *SimDelay        `xml:"simulation_delay,omitempty"`
+	SimDelay        *SimDelay        `xml:"simulation_delay"`
+	Pages           *Pages           `xml:"pages"`
 	PageWidth       int              `xml:"page_width,attr,omitempty"`
 	PageHeight      int              `xml:"page_height,attr,omitempty"`
 	PageRows        int              `xml:"page_rows,attr,omitempty"`
@@ -80,8 +81,17 @@ type View struct {
 	ConverterSize   string           `xml:"converter_size,attr,omitempty"`
 }
 
+type Pages struct {
+	Show     bool `xml:"show,attr"`
+	RowCount int  `xml:"row_count,attr"`
+	ColCount int  `xml:"column_count,attr"`
+	HomePage int  `xml:"home_page,attr"`
+	xmile.Size
+}
+
 // TODO(bp) implement
 type SimDelay struct {
+	Content float64 `xml:",chardata"`
 }
 
 // Variable is the definition of a model entity.  Some fields, such as
