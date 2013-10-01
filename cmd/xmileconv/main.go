@@ -12,6 +12,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/bpowers/go-xmile/compat"
+	"github.com/bpowers/go-xmile/xmile"
 	"io/ioutil"
 	"log"
 	"os"
@@ -29,8 +30,9 @@ Options:
 )
 
 var (
-	outFmt string
-	inFmt  string
+	stripVendorTags bool
+	outFmt          string
+	inFmt           string
 
 	validFmts = map[string]bool{
 		"isee": true,
@@ -46,8 +48,10 @@ func init() {
 
 	flag.StringVar(&inFmt, "in", "isee",
 		"input format [isee,tc]")
-	flag.StringVar(&outFmt, "out", "isee",
+	flag.StringVar(&outFmt, "out", "tc",
 		"output format [isee,tc]")
+	flag.BoolVar(&stripVendorTags, "novendor", false,
+		"strip vendor-specific tags from output")
 
 	flag.Parse()
 
@@ -68,7 +72,8 @@ func init() {
 
 func main() {
 	var err error
-	var contents []byte
+	var contents, output []byte
+
 	fname := flag.Arg(0)
 	if fname == "" {
 		fname = "<stdin>"
@@ -76,27 +81,36 @@ func main() {
 	} else {
 		contents, err = ioutil.ReadFile(fname)
 	}
-
-	// TODO(bp) implement...
-	if inFmt != "isee" || outFmt != "isee" {
-		log.Fatalf("error: only isee->isee (roundtripping) is supported so far.")
-	}
-
 	if err != nil {
 		log.Fatalf("ioutil.ReadFile(%s): %s", fname, err)
 	}
 
-	f, err := compat.ReadFile(contents)
-	if err != nil {
-		log.Fatalf("compat.ReadFile: %s", err)
+	var f interface{}
+	switch inFmt {
+	case "isee":
+		var iseeFile *compat.File
+		if iseeFile, err = compat.ReadFile(contents); err != nil {
+			log.Fatalf("compat.ReadFile: %s", err)
+		}
+		switch outFmt {
+		case "tc":
+			if f, err = compat.ConvertFromIsee(iseeFile, stripVendorTags); err != nil {
+				log.Fatalf("compat.ReadFile: %s", err)
+			}
+		case "isee":
+			f = iseeFile
+		default:
+			log.Fatalf("error: only isee->[isee,tc] is supported so far.")
+		}
+	default:
+		log.Fatalf("error: only isee->[isee,tc] is supported so far.")
 	}
 
-	output, err := xml.MarshalIndent(f, "", "    ")
-	if err != nil {
+	if output, err = xml.MarshalIndent(f, "", "    "); err != nil {
 		log.Fatalf("xml.MarshalIndent: %s", err)
 	}
 
-	os.Stdout.Write([]byte(compat.XMLDeclaration + "\n"))
+	os.Stdout.Write([]byte(xmile.XMLDeclaration + "\n"))
 	os.Stdout.Write(output)
 	os.Stdout.Write([]byte("\n"))
 }

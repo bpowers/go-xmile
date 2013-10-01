@@ -11,11 +11,19 @@ import (
 	"encoding/xml"
 	"fmt"
 	"github.com/bpowers/go-xmile/xmile"
+	"log"
+	"reflect"
 )
 
-// the standard XML declaration, declared as a constant for easy
-// reuse.
-const XMLDeclaration = `<?xml version="1.0" encoding="utf-8" ?>`
+// An XML node
+type Node interface {
+	node()
+}
+
+func (*File) node()      {}
+func (*IseePrefs) node() {}
+func (*Model) node()     {}
+func (*Variable) node()  {}
 
 // File represents the entire contents of a XMILE document as
 // implemented by STELLA & iThink version ~10.0.3
@@ -156,4 +164,59 @@ func ReadFile(contents []byte) (*File, error) {
 	}
 
 	return f, nil
+}
+
+func ConvertToIsee(f *xmile.File) (*File, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+// TODO(bp) f is an interface{} so that any tag can be passed, and the
+// corresponding TC xmile tag returned.  Currently, only the root File
+// tag is supported.
+//
+// ConvertFromIsee takes an isee tag and converts it to the current TC
+// draft XMILE spec.  If stripVendorTags is true, isee-namespaced tags
+// and attributes that would otherwise have been passed through will
+// be removed.
+func ConvertFromIsee(in Node, stripVendorTags bool) (xmile.Node, error) {
+	var out xmile.Node
+
+	switch in.(type) {
+	case *File:
+		out = new(xmile.File)
+	case *Model:
+		out = new(xmile.Model)
+	case *Variable:
+		out = new(xmile.Variable)
+	default:
+		return nil, fmt.Errorf("value (%#v) not convertable", in)
+	}
+
+	vin := reflect.ValueOf(in).Elem()
+	vout := reflect.ValueOf(out).Elem()
+	nfield := vin.NumField()
+	for i := 0; i < nfield; i++ {
+		fin := vin.Field(i)
+		foutty, ok := vout.Type().FieldByName(vin.Type().Field(i).Name)
+		if !ok {
+			log.Printf("field %s not found on TC struct, skipping",
+				vin.Type().Field(i).Name)
+			continue
+		}
+		fout := vout.FieldByName(foutty.Name)
+		if vendorField, ok := fin.Interface().(Node); ok {
+			xfin, err := ConvertFromIsee(vendorField, stripVendorTags)
+			if err != nil {
+				return nil, fmt.Errorf("ConvertFromIsee(%#v): %s", vendorField, xfin)
+			}
+			fin = reflect.ValueOf(xfin).Elem()
+		}
+		if fout.Kind() == reflect.Ptr {
+			fout.Set(fin.Addr())
+		} else {
+			fout.Set(fin)
+		}
+	}
+
+	return out, nil
 }

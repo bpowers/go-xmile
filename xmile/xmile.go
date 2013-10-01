@@ -10,6 +10,16 @@ import (
 	"fmt"
 )
 
+// An XML node
+type Node interface {
+	node()
+}
+
+func (*File) node()     {}
+func (*EqnPrefs) node() {}
+func (*Model) node()    {}
+func (*Variable) node() {}
+
 // the standard XML declaration, declared as a constant for easy
 // reuse.
 const XMLDeclaration = `<?xml version="1.0" encoding="utf-8" ?>`
