@@ -170,6 +170,20 @@ func ConvertToIsee(f *xmile.File) (*File, error) {
 	return nil, fmt.Errorf("not implemented")
 }
 
+func convertFromIseeField(fin reflect.Value, stripVendorTags bool) (fout reflect.Value, err error) {
+	vendorField, ok := fin.Interface().(Node)
+	if !ok {
+		return fin, nil
+	}
+
+	var xfin xmile.Node
+	xfin, err = ConvertFromIsee(vendorField, stripVendorTags)
+	if err != nil {
+		err = fmt.Errorf("ConvertFromIsee(%#v): %s", vendorField, err)
+	}
+	return reflect.ValueOf(xfin).Elem(), nil
+}
+
 // TODO(bp) f is an interface{} so that any tag can be passed, and the
 // corresponding TC xmile tag returned.  Currently, only the root File
 // tag is supported.
@@ -178,9 +192,7 @@ func ConvertToIsee(f *xmile.File) (*File, error) {
 // draft XMILE spec.  If stripVendorTags is true, isee-namespaced tags
 // and attributes that would otherwise have been passed through will
 // be removed.
-func ConvertFromIsee(in Node, stripVendorTags bool) (xmile.Node, error) {
-	var out xmile.Node
-
+func ConvertFromIsee(in Node, stripVendorTags bool) (out xmile.Node, err error) {
 	switch in.(type) {
 	case *File:
 		out = new(xmile.File)
@@ -196,6 +208,7 @@ func ConvertFromIsee(in Node, stripVendorTags bool) (xmile.Node, error) {
 	vout := reflect.ValueOf(out).Elem()
 	nfield := vin.NumField()
 	for i := 0; i < nfield; i++ {
+		fmt.Printf("\tfield: %s\n", vin.Type().Field(i).Name)
 		fin := vin.Field(i)
 		foutty, ok := vout.Type().FieldByName(vin.Type().Field(i).Name)
 		if !ok {
@@ -204,16 +217,45 @@ func ConvertFromIsee(in Node, stripVendorTags bool) (xmile.Node, error) {
 			continue
 		}
 		fout := vout.FieldByName(foutty.Name)
-		if vendorField, ok := fin.Interface().(Node); ok {
-			xfin, err := ConvertFromIsee(vendorField, stripVendorTags)
-			if err != nil {
-				return nil, fmt.Errorf("ConvertFromIsee(%#v): %s", vendorField, xfin)
-			}
-			fin = reflect.ValueOf(xfin).Elem()
+		if fin, err = convertFromIseeField(fin, stripVendorTags); err != nil {
+			return nil, fmt.Errorf("convertFromVendorTag: %s", err)
 		}
-		if fout.Kind() == reflect.Ptr {
+
+		// TODO(bp) model & interface views
+
+		switch fout.Kind() {
+		case reflect.Ptr:
 			fout.Set(fin.Addr())
-		} else {
+		case reflect.Slice:
+			if fin.Len() == 0 {
+				continue
+			}
+			e0 := fin.Index(0)
+			if e0.Kind() == reflect.Ptr {
+				e0 = e0.Elem()
+			}
+			// FIXME(bp) generalize
+			if e0.Type() != reflect.TypeOf(Model{}) {
+				log.Printf("slice type not model: %s", e0.Type())
+				continue
+			}
+			models := make([]*xmile.Model, fin.Len())
+			modelsV := reflect.ValueOf(models)
+
+			for j := 0; j < fin.Len(); j++ {
+				m, _ := fin.Index(j).Interface().(*Model)
+				var xm xmile.Node
+				fmt.Printf("xmodel\n")
+				xm, err = ConvertFromIsee(m, stripVendorTags)
+				if err != nil {
+					return
+				}
+				xmodel, _ := xm.(*xmile.Model)
+				fmt.Printf("xmodel: %#v\n", xmodel)
+				models[j] = xmodel
+			}
+			fout.Set(modelsV)
+		default:
 			fout.Set(fin)
 		}
 	}

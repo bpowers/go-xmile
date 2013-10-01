@@ -34,7 +34,7 @@ type File struct {
 	Dimensions []*Dimension `xml:"dimensions,omitempty>dim,omitempty"`
 	ModelUnits *ModelUnits  `xml:"model_units"`
 	EqnPrefs   *EqnPrefs    `xml:"equation_prefs"`
-	Models     []*Model     `xml:"model,omitempty"`
+	Models     []*Model     `xml:"model"`
 }
 
 type EqnPrefs struct {
