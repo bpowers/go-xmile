@@ -127,8 +127,8 @@ type SimSpec struct {
 type Model struct {
 	XMLName   xml.Name    `xml:"model"`
 	Name      string      `xml:"name,attr,omitempty"`
-	Variables []*Variable `xml:"variables>variable,omitempty"`
-	Views     []*View     `xml:"views,omitempty>view,omitempty"`
+	Variables []*Variable `xml:"variables>variable"`
+	Views     *[]*View    `xml:"views>view"`
 }
 
 // View is a collection of objects representing the visual structure
@@ -219,6 +219,7 @@ type Display struct {
 	XMLName xml.Name
 	Rect
 	Style
+	Name            string     `xml:"name,attr,omitempty"`                // stock,flow,aux
 	UID             string     `xml:"uid,attr,omitempty"`                 // BUG(bp) should this be an int?
 	Label           string     `xml:"label,attr,omitempty"`               // stock,flow,aux
 	LabelSide       string     `xml:"label_side,omitempty"`               // stock,flow,aux

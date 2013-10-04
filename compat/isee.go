@@ -185,31 +185,39 @@ func convertFromIseeField(fin reflect.Value, stripVendorTags bool) (fout reflect
 }
 
 func convertFromIseeSlice(fin reflect.Value, stripVendorTags bool) (fout reflect.Value, err error) {
-	e0 := fin.Index(0)
-	if e0.Kind() == reflect.Ptr {
-		e0 = e0.Elem()
+	if fin.Len() == 0 || fin.IsNil() {
+		return fin, nil
 	}
-	// FIXME(bp) generalize
-	if e0.Type() != reflect.TypeOf(Model{}) {
-		log.Printf("slice type not model: %s", e0.Type())
+	e0 := fin.Index(0)
+
+	var slice interface{}
+
+	switch e0.Interface().(type) {
+	case *Model:
+		slice = make([]*xmile.Model, fin.Len())
+	case *Variable:
+		slice = make([]*xmile.Variable, fin.Len())
+	default:
+		log.Printf("slice type not supported: %s", e0.Type())
 		return reflect.ValueOf([]interface{}{}), nil
 	}
-	models := make([]*xmile.Model, fin.Len())
-	modelsV := reflect.ValueOf(models)
 
-	for j := 0; j < fin.Len(); j++ {
-		m, _ := fin.Index(j).Interface().(*Model)
+	for i := 0; i < fin.Len(); i++ {
+		m, _ := fin.Index(i).Interface().(Node)
 		var xm xmile.Node
-		fmt.Printf("xmodel\n")
 		xm, err = ConvertFromIsee(m, stripVendorTags)
 		if err != nil {
 			return
 		}
-		xmodel, _ := xm.(*xmile.Model)
-		fmt.Printf("xmodel: %#v\n", xmodel)
-		models[j] = xmodel
+		switch sl := slice.(type) {
+		case []*xmile.Model:
+			sl[i] = xm.(*xmile.Model)
+		case []*xmile.Variable:
+			// TODO: also need to pull out display tags
+			sl[i] = xm.(*xmile.Variable)
+		}
 	}
-	return modelsV, nil
+	return reflect.ValueOf(slice), nil
 
 }
 
@@ -219,18 +227,33 @@ type valProvider func() reflect.Value
 // corresponding TC xmile tag returned.  Currently, only the root File
 // tag is supported.
 //
+// TODO(bp) implement stripVendorTags
+//
 // ConvertFromIsee takes an isee tag and converts it to the current TC
 // draft XMILE spec.  If stripVendorTags is true, isee-namespaced tags
 // and attributes that would otherwise have been passed through will
 // be removed.
 func ConvertFromIsee(in Node, stripVendorTags bool) (out xmile.Node, err error) {
-	switch in.(type) {
+	switch n := in.(type) {
 	case *File:
 		out = new(xmile.File)
 	case *Model:
-		out = new(xmile.Model)
+		xm := new(xmile.Model)
+		xm.Views = &[]*xmile.View{new(xmile.View), new(xmile.View)}
+		*(*xm.Views)[0] = n.Display
+		*(*xm.Views)[1] = n.Interface
+		(*xm.Views)[1].XMLName.Local = "display"
+		(*xm.Views)[1].Name = "interface"
+		for _, v := range n.Variables {
+			nd := new(xmile.Display)
+			*nd = *v.Display
+			nd.XMLName.Local = v.XMLName.Local
+			nd.Name = v.Name
+			(*xm.Views)[0].Ents = append((*xm.Views)[0].Ents, nd)
+		}
+		out = xm
 	case *Variable:
-		out = new(xmile.Variable)
+		return &n.Variable, nil
 	default:
 		return nil, fmt.Errorf("value (%#v) not convertable", in)
 	}
@@ -252,7 +275,6 @@ func ConvertFromIsee(in Node, stripVendorTags bool) (out xmile.Node, err error) 
 			return nil, fmt.Errorf("convertFromVendorTag: %s", err)
 		}
 
-		// TODO(bp) model & interface views
 		isInd := false
 		outVal := fout
 		if fout.Kind() == reflect.Ptr {
@@ -262,15 +284,12 @@ func ConvertFromIsee(in Node, stripVendorTags bool) (out xmile.Node, err error) 
 
 		switch outVal.Kind() {
 		case reflect.Slice:
-			if fin.Len() == 0 || fin.IsNil() {
-				continue
-			}
 			fin, err = convertFromIseeSlice(fin, stripVendorTags)
 			if err != nil {
 				log.Printf("convertFromIseeSlice: %s", err)
 				continue
 			}
-			if fin.Len() == 0 {
+			if fin.Len() == 0 || fin.IsNil() {
 				continue
 			}
 			fallthrough
