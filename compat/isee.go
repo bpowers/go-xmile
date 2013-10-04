@@ -184,8 +184,33 @@ func convertFromIseeField(fin reflect.Value, stripVendorTags bool) (fout reflect
 	return reflect.ValueOf(xfin).Elem(), nil
 }
 
-func convertFromIseeSlice(fin, fout reflect.Value, stripVendorTags bool) error {
-	return nil
+func convertFromIseeSlice(fin reflect.Value, stripVendorTags bool) (fout reflect.Value, err error) {
+	e0 := fin.Index(0)
+	if e0.Kind() == reflect.Ptr {
+		e0 = e0.Elem()
+	}
+	// FIXME(bp) generalize
+	if e0.Type() != reflect.TypeOf(Model{}) {
+		log.Printf("slice type not model: %s", e0.Type())
+		return reflect.ValueOf([]interface{}{}), nil
+	}
+	models := make([]*xmile.Model, fin.Len())
+	modelsV := reflect.ValueOf(models)
+
+	for j := 0; j < fin.Len(); j++ {
+		m, _ := fin.Index(j).Interface().(*Model)
+		var xm xmile.Node
+		fmt.Printf("xmodel\n")
+		xm, err = ConvertFromIsee(m, stripVendorTags)
+		if err != nil {
+			return
+		}
+		xmodel, _ := xm.(*xmile.Model)
+		fmt.Printf("xmodel: %#v\n", xmodel)
+		models[j] = xmodel
+	}
+	return modelsV, nil
+
 }
 
 type valProvider func() reflect.Value
@@ -240,31 +265,15 @@ func ConvertFromIsee(in Node, stripVendorTags bool) (out xmile.Node, err error) 
 			if fin.Len() == 0 || fin.IsNil() {
 				continue
 			}
-			e0 := fin.Index(0)
-			if e0.Kind() == reflect.Ptr {
-				e0 = e0.Elem()
-			}
-			// FIXME(bp) generalize
-			if e0.Type() != reflect.TypeOf(Model{}) {
-				log.Printf("slice type not model: %s", e0.Type())
+			fin, err = convertFromIseeSlice(fin, stripVendorTags)
+			if err != nil {
+				log.Printf("convertFromIseeSlice: %s", err)
 				continue
 			}
-			models := make([]*xmile.Model, fin.Len())
-			modelsV := reflect.ValueOf(models)
-
-			for j := 0; j < fin.Len(); j++ {
-				m, _ := fin.Index(j).Interface().(*Model)
-				var xm xmile.Node
-				fmt.Printf("xmodel\n")
-				xm, err = ConvertFromIsee(m, stripVendorTags)
-				if err != nil {
-					return
-				}
-				xmodel, _ := xm.(*xmile.Model)
-				fmt.Printf("xmodel: %#v\n", xmodel)
-				models[j] = xmodel
+			if fin.Len() == 0 {
+				continue
 			}
-			fout.Set(modelsV)
+			fallthrough
 		default:
 			if isInd {
 				fout.Set(fin.Addr())
