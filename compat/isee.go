@@ -184,6 +184,12 @@ func convertFromIseeField(fin reflect.Value, stripVendorTags bool) (fout reflect
 	return reflect.ValueOf(xfin).Elem(), nil
 }
 
+func convertFromIseeSlice(fin, fout reflect.Value, stripVendorTags bool) error {
+	return nil
+}
+
+type valProvider func() reflect.Value
+
 // TODO(bp) f is an interface{} so that any tag can be passed, and the
 // corresponding TC xmile tag returned.  Currently, only the root File
 // tag is supported.
@@ -222,12 +228,16 @@ func ConvertFromIsee(in Node, stripVendorTags bool) (out xmile.Node, err error) 
 		}
 
 		// TODO(bp) model & interface views
+		isInd := false
+		outVal := fout
+		if fout.Kind() == reflect.Ptr {
+			isInd = true
+			outVal = fout.Elem()
+		}
 
-		switch fout.Kind() {
-		case reflect.Ptr:
-			fout.Set(fin.Addr())
+		switch outVal.Kind() {
 		case reflect.Slice:
-			if fin.Len() == 0 {
+			if fin.Len() == 0 || fin.IsNil() {
 				continue
 			}
 			e0 := fin.Index(0)
@@ -256,7 +266,11 @@ func ConvertFromIsee(in Node, stripVendorTags bool) (out xmile.Node, err error) 
 			}
 			fout.Set(modelsV)
 		default:
-			fout.Set(fin)
+			if isInd {
+				fout.Set(fin.Addr())
+			} else {
+				fout.Set(fin)
+			}
 		}
 	}
 
