@@ -95,7 +95,7 @@ func main() {
 		switch outFmt {
 		case "tc":
 			if f, err = compat.ConvertFromIsee(iseeFile, stripVendorTags); err != nil {
-				log.Fatalf("compat.ReadFile: %s", err)
+				log.Fatalf("compat.ConvertFromIsee: %s", err)
 			}
 		case "isee":
 			f = iseeFile
