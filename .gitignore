@@ -1,5 +1,6 @@
 *~
 build/
 cmd/xmileconv/xmileconv
+cmd/xmileserv/xmileserv
 xmile/*.itmx
 out/
