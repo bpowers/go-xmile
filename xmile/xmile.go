@@ -31,7 +31,7 @@ type File struct {
 	Level      int          `xml:"level,attr"`
 	Header     Header       `xml:"header"`
 	SimSpec    SimSpec      `xml:"sim_specs"`
-	Dimensions []*Dimension `xml:"dimensions,omitempty>dim,omitempty"`
+	Dimensions []*Dimension `xml:"dimensions,omitempty>dim"`
 	ModelUnits *ModelUnits  `xml:"model_units"`
 	EqnPrefs   *EqnPrefs    `xml:"equation_prefs"`
 	Models     []*Model     `xml:"model"`
@@ -198,6 +198,7 @@ type Scale struct {
 // Style contains information about the visual appearance of a display
 // entity.
 type Style struct {
+	Parent      *Style `xml:"-"` // for the style cascade
 	Background  string `xml:"background,attr,omitempty"`
 	Color       string `xml:"color,attr,omitempty"`
 	FontFamily  string `xml:"font-family,attr,omitempty"`
@@ -210,7 +211,7 @@ type Style struct {
 	Padding     string `xml:"padding,attr,omitempty"`
 	BorderColor string `xml:"border-color,attr,omitempty"`
 	BorderStyle string `xml:"border-style,attr,omitempty"`
-	BorderWidth string `xml:"border-width,attr,omitempty"`
+	BorderWidth string `xml:"border-width,attr,omitempty"` // BUG(bp) <double>?
 }
 
 // Display represents a visual entity in a view, such as a stock,
@@ -323,9 +324,8 @@ func UUIDv4() (string, error) {
 func NewFile(level int, name string) *File {
 	id, err := UUIDv4()
 	if err != nil {
-		// this is pretty frowned upon, but I don't want
-		// NewFile's interface to potentially fail, and if
-		// rand.Read fails we have bigger issues.
+		// I don't want NewFile's interface to potentially
+		// fail, and if rand.Read fails we have bigger issues.
 		panic(err)
 	}
 

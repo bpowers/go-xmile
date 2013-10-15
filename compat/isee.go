@@ -213,7 +213,6 @@ func convertFromIseeSlice(fin reflect.Value, stripVendorTags bool) (fout reflect
 		case []*xmile.Model:
 			sl[i] = xm.(*xmile.Model)
 		case []*xmile.Variable:
-			// TODO: also need to pull out display tags
 			sl[i] = xm.(*xmile.Variable)
 		}
 	}
@@ -242,7 +241,8 @@ func ConvertFromIsee(in Node, stripVendorTags bool) (out xmile.Node, err error) 
 		xm.Views = &[]*xmile.View{new(xmile.View), new(xmile.View)}
 		*(*xm.Views)[0] = n.Display
 		*(*xm.Views)[1] = n.Interface
-		(*xm.Views)[1].XMLName.Local = "display"
+		(*xm.Views)[0].XMLName.Local = "view"
+		(*xm.Views)[1].XMLName.Local = "view"
 		(*xm.Views)[1].Name = "interface"
 		for _, v := range n.Variables {
 			nd := new(xmile.Display)
@@ -253,7 +253,11 @@ func ConvertFromIsee(in Node, stripVendorTags bool) (out xmile.Node, err error) 
 		}
 		out = xm
 	case *Variable:
-		return &n.Variable, nil
+		xv := new(xmile.Variable)
+		*xv = n.Variable
+		xv.XMLName = n.XMLName
+		out = xv
+		return
 	default:
 		return nil, fmt.Errorf("value (%#v) not convertable", in)
 	}
