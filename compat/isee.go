@@ -266,12 +266,12 @@ func ConvertFromIsee(in Node, stripVendorTags bool) (out xmile.Node, err error) 
 	vout := reflect.ValueOf(out).Elem()
 	nfield := vin.NumField()
 	for i := 0; i < nfield; i++ {
-		fmt.Printf("\tfield: %s\n", vin.Type().Field(i).Name)
+		//log.Printf("\tfield: %s\n", vin.Type().Field(i).Name)
 		fin := vin.Field(i)
 		foutty, ok := vout.Type().FieldByName(vin.Type().Field(i).Name)
 		if !ok {
-			log.Printf("field %s not found on TC struct, skipping",
-				vin.Type().Field(i).Name)
+			//log.Printf("field %s not found on TC struct, skipping",
+			//	vin.Type().Field(i).Name)
 			continue
 		}
 		fout := vout.FieldByName(foutty.Name)
