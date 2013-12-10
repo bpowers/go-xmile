@@ -167,7 +167,6 @@ func ReadFile(contents []byte) (*File, error) {
 				c.XMLName.Space = ""
 				c.To = CanonicalName(c.To)
 				c.From = CanonicalName(c.From)
-				log.Printf("%s -> %s", v.Name, c.To)
 			}
 			cleanIseeDisplayTag(v.Display, false)
 		}
