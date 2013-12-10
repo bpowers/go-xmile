@@ -168,15 +168,22 @@ type Pages struct {
 // types.  The type is determined by the tag name and is stored in
 // XMLName.Name.
 type Variable struct {
-	XMLName  xml.Name
-	Name     string   `xml:"name,attr"`
-	Doc      string   `xml:"doc,omitempty"`
-	Eqn      string   `xml:"eqn"`
-	NonNeg   *Exister `xml:"non_negative"`      // stock,(uni-)flow
-	Inflows  []string `xml:"inflow,omitempty"`  // empty for non-stocks
-	Outflows []string `xml:"outflow,omitempty"` // empty for non-stocks
-	Units    string   `xml:"units,omitempty"`
-	GF       *GF      `xml:"gf"` // nil if one doesn't exist
+	XMLName    xml.Name
+	Name       string     `xml:"name,attr"`
+	Doc        string     `xml:"doc,omitempty"`
+	Eqn        string     `xml:"eqn,omitempty"`
+	NonNeg     *Exister   `xml:"non_negative"`      // stock,(uni-)flow
+	Inflows    []string   `xml:"inflow,omitempty"`  // empty for non-stocks
+	Outflows   []string   `xml:"outflow,omitempty"` // empty for non-stocks
+	Units      string     `xml:"units,omitempty"`
+	GF         *GF        `xml:"gf"` // nil if one doesn't exist
+	Parameters []*Connect `xml:",any,omitempty"`
+}
+
+type Connect struct {
+	XMLName xml.Name
+	To      string `xml:"to,attr"`
+	From    string `xml:"from,attr"`
 }
 
 // GF contains the definition of a graphical function associated with
@@ -223,8 +230,8 @@ type Display struct {
 	Name            string     `xml:"name,attr,omitempty"`                // stock,flow,aux
 	UID             string     `xml:"uid,attr,omitempty"`                 // BUG(bp) should this be an int?
 	Label           string     `xml:"label,attr,omitempty"`               // stock,flow,aux
-	LabelSide       string     `xml:"label_side,omitempty"`               // stock,flow,aux
-	LabelAngle      string     `xml:"label_angle,omitempty"`              // stock,flow,aux
+	LabelSide       string     `xml:"label_side,attr,omitempty"`          // stock,flow,aux
+	LabelAngle      string     `xml:"label_angle,attr,omitempty"`         // stock,flow,aux
 	From            string     `xml:"from,omitempty"`                     // connector
 	To              string     `xml:"to,omitempty"`                       // connector
 	Points          *[]*Point  `xml:"pts>pt"`                             // flow,connector

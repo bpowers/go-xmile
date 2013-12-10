@@ -13,6 +13,7 @@ import (
 	"github.com/bpowers/go-xmile/xmile"
 	"log"
 	"reflect"
+	"regexp"
 )
 
 // An XML node
@@ -126,6 +127,15 @@ func cleanIseeDisplayTag(d *xmile.Display, inNS bool) {
 	}
 }
 
+var whitespaceRegexp = regexp.MustCompile("[ \t\r\n_]+")
+
+// CanonicalName takes the string in and converts literal newlines
+// into underscores, and collapes multiple underscores into a single
+// underscore.
+func CanonicalName(in string) string {
+	return whitespaceRegexp.ReplaceAllString(in, "_")
+}
+
 // ReadFile takes a block of xml content that represents a XMILE file,
 // as implemented by iThink/STELLA v10.0.3, and returns a File
 // structure, or an error.  The hope is that iThink files rountripped
@@ -153,6 +163,12 @@ func ReadFile(contents []byte) (*File, error) {
 		m.Interface.XMLName.Space = ""
 		for _, v := range m.Variables {
 			v.XMLName.Space = ""
+			for _, c := range v.Parameters {
+				c.XMLName.Space = ""
+				c.To = CanonicalName(c.To)
+				c.From = CanonicalName(c.From)
+				log.Printf("%s -> %s", v.Name, c.To)
+			}
 			cleanIseeDisplayTag(v.Display, false)
 		}
 		for _, v := range m.Display.Ents {
