@@ -86,7 +86,7 @@ Produces the output:
     <header>
         <name>hello, xworld</name>
         <uuid>5ec6ca0d-74e5-a62c-e84a-527fb9753db1</uuid>
-        <vendor>XMILE TC</vendor>
+        <vendor>SDLabs</vendor>
         <product version="0.1" lang="en">go-xmile</product>
     </header>
     <sim_specs time_units="year">

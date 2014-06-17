@@ -340,7 +340,7 @@ func NewFile(level int, name string) *File {
 	f.Header = Header{
 		Name:   name,
 		UUID:   id,
-		Vendor: "XMILE TC",
+		Vendor: "SDLabs",
 		Product: Product{
 			Name:    "go-xmile",
 			Version: "0.1",
