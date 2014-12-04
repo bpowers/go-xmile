@@ -192,7 +192,7 @@ type Connect struct {
 type GF struct {
 	XMLName  xml.Name `xml:"gf"`
 	Discrete bool     `xml:"discrete,attr"`
-	XPoints  string   `xml:"xpts"`
+	XPoints  string   `xml:"xpts,omitempty"`
 	YPoints  string   `xml:"ypts"`
 	XScale   Scale    `xml:"xscale"`
 	YScale   Scale    `xml:"yscale"`
