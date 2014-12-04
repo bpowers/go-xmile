@@ -19,6 +19,7 @@ func (*File) node()     {}
 func (*EqnPrefs) node() {}
 func (*Model) node()    {}
 func (*Variable) node() {}
+func (*Dimension) node() {}
 
 // the standard XML declaration, declared as a constant for easy
 // reuse.
@@ -31,7 +32,7 @@ type File struct {
 	Level      int          `xml:"level,attr"`
 	Header     Header       `xml:"header"`
 	SimSpec    SimSpec      `xml:"sim_specs"`
-	Dimensions []*Dimension `xml:"dimensions,omitempty>dim"`
+	Dimensions []*Dimension `xml:"dimensions>dim,omitempty"`
 	ModelUnits *ModelUnits  `xml:"model_units"`
 	EqnPrefs   *EqnPrefs    `xml:"equation_prefs"`
 	Models     []*Model     `xml:"model"`

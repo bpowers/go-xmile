@@ -204,6 +204,7 @@ func convertFromIseeSlice(fin reflect.Value, stripVendorTags bool) (fout reflect
 		return fin, nil
 	}
 	e0 := fin.Index(0)
+	needsConvert := true
 
 	var slice interface{}
 
@@ -212,15 +213,22 @@ func convertFromIseeSlice(fin reflect.Value, stripVendorTags bool) (fout reflect
 		slice = make([]*xmile.Model, fin.Len())
 	case *Variable:
 		slice = make([]*xmile.Variable, fin.Len())
+	case *xmile.Dimension:
+		slice = make([]*xmile.Dimension, fin.Len())
+		needsConvert = false
 	default:
 		log.Printf("slice type not supported: %s", e0.Type())
 		return reflect.ValueOf([]interface{}{}), nil
 	}
 
 	for i := 0; i < fin.Len(); i++ {
-		m, _ := fin.Index(i).Interface().(Node)
 		var xm xmile.Node
-		xm, err = ConvertFromIsee(m, stripVendorTags)
+		if needsConvert {
+			m, _ := fin.Index(i).Interface().(Node)
+			xm, err = ConvertFromIsee(m, stripVendorTags)
+		} else {
+			xm, _ = fin.Index(i).Interface().(xmile.Node)
+		}
 		if err != nil {
 			return
 		}
@@ -229,6 +237,8 @@ func convertFromIseeSlice(fin reflect.Value, stripVendorTags bool) (fout reflect
 			sl[i] = xm.(*xmile.Model)
 		case []*xmile.Variable:
 			sl[i] = xm.(*xmile.Variable)
+		case []*xmile.Dimension:
+			sl[i] = xm.(*xmile.Dimension)
 		}
 	}
 	return reflect.ValueOf(slice), nil
