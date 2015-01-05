@@ -108,7 +108,7 @@ type Exister string
 type Product struct {
 	Name    string `xml:",chardata"`
 	Version string `xml:"version,attr"`
-	Lang    string `xml:"lang,attr"`
+	Lang    string `xml:"lang,attr,omitempty"`
 }
 
 // SimSpec defines the time parameters a given model should be

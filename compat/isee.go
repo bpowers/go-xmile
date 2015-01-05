@@ -331,5 +331,13 @@ func ConvertFromIsee(in Node, stripVendorTags bool) (out xmile.Node, err error) 
 		}
 	}
 
+	// update the header so that consumers know we now have TC
+	// XMILE
+	switch f := out.(type) {
+	case *xmile.File:
+		f.Header.Vendor = "SDLabs"
+		f.Header.Product = xmile.Product{"go-xmile", "0.1", ""}
+	}
+
 	return out, nil
 }
