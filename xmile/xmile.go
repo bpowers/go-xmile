@@ -15,10 +15,10 @@ type Node interface {
 	node()
 }
 
-func (*File) node()     {}
-func (*EqnPrefs) node() {}
-func (*Model) node()    {}
-func (*Variable) node() {}
+func (*File) node()      {}
+func (*EqnPrefs) node()  {}
+func (*Model) node()     {}
+func (*Variable) node()  {}
 func (*Dimension) node() {}
 
 // the standard XML declaration, declared as a constant for easy
