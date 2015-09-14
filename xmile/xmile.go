@@ -16,7 +16,7 @@ type Node interface {
 }
 
 func (*File) node()      {}
-func (*EqnPrefs) node()  {}
+func (*Behavior) node()  {}
 func (*Model) node()     {}
 func (*Variable) node()  {}
 func (*Dimension) node() {}
@@ -34,13 +34,13 @@ type File struct {
 	SimSpec    SimSpec      `xml:"sim_specs"`
 	Dimensions []*Dimension `xml:"dimensions>dim,omitempty"`
 	ModelUnits *ModelUnits  `xml:"model_units"`
-	EqnPrefs   *EqnPrefs    `xml:"equation_prefs"`
+	Behavior   *Behavior    `xml:"behavior"`
 	Models     []*Model     `xml:"model"`
 }
 
-type EqnPrefs struct {
+type Behavior struct {
 	XMLName xml.Name
-	OrderBy string `xml:"order_by,attr"`
+	NonNegative bool `xml:"non_negative,attr"`
 }
 
 type ModelUnits struct {
@@ -48,8 +48,8 @@ type ModelUnits struct {
 
 // Point represents a position in a 2D plane
 type Point struct {
-	X float64 `xml:"x,attr"`
-	Y float64 `xml:"y,attr"`
+	X float64 `xml:"x,attr,omitempty"`
+	Y float64 `xml:"y,attr,omitempty"`
 }
 
 // Size represents an area on a 2D plane
@@ -119,6 +119,7 @@ type SimSpec struct {
 	Start     float64 `xml:"start"`
 	Stop      float64 `xml:"stop"`
 	DT        float64 `xml:"dt"`
+	SaveStep  string  `xml:"save_step,omitempty"`
 	Method    string  `xml:"method,omitempty"`
 }
 
@@ -178,7 +179,7 @@ type Variable struct {
 	Outflows   []string   `xml:"outflow,omitempty"` // empty for non-stocks
 	Units      string     `xml:"units,omitempty"`
 	GF         *GF        `xml:"gf"` // nil if one doesn't exist
-	Parameters []*Connect `xml:",any,omitempty"`
+	Params     []*Connect `xml:",any,omitempty"`
 }
 
 type Connect struct {
@@ -235,6 +236,7 @@ type Display struct {
 	LabelAngle      string     `xml:"label_angle,attr,omitempty"`         // stock,flow,aux
 	From            string     `xml:"from,omitempty"`                     // connector
 	To              string     `xml:"to,omitempty"`                       // connector
+	Angle           string     `xml:"angle,attr,omitempty"`               // connector
 	Points          *[]*Point  `xml:"pts>pt"`                             // flow,connector
 	IconOf          string     `xml:"icon_of,attr,omitempty"`             // graph-pad-icon
 	Precision       int        `xml:"precision,attr,omitempty"`           // lamp

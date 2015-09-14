@@ -38,7 +38,7 @@ type File struct {
 	Dimensions []*xmile.Dimension `xml:"dimensions>dim,omitempty"`
 	ModelUnits xmile.ModelUnits   `xml:"model_units"`
 	IseePrefs  IseePrefs          `xml:"prefs"`
-	EqnPrefs   xmile.EqnPrefs     `xml:"equation_prefs"`
+	Behavior   xmile.Behavior     `xml:"behavior"`
 	Models     []*Model           `xml:"model,omitempty"`
 }
 
@@ -157,18 +157,20 @@ func ReadFile(contents []byte) (*File, error) {
 	f.IseePrefs.Window.XMLName.Space = "isee"
 	f.IseePrefs.Security.XMLName.Space = "isee"
 	f.IseePrefs.PrintSetup.XMLName.Space = "isee"
-	f.EqnPrefs.XMLName.Space = "isee"
+	f.Behavior.XMLName.Space = "isee"
 	for _, m := range f.Models {
 		m.Display.XMLName.Space = ""
 		m.Interface.XMLName.Space = ""
 		for _, v := range m.Variables {
 			v.XMLName.Space = ""
-			for _, c := range v.Parameters {
+			for _, c := range v.Params {
 				c.XMLName.Space = ""
 				c.To = CanonicalName(c.To)
 				c.From = CanonicalName(c.From)
 			}
-			cleanIseeDisplayTag(v.Display, false)
+			if v.Display != nil {
+				cleanIseeDisplayTag(v.Display, false)
+			}
 		}
 		for _, v := range m.Display.Ents {
 			cleanIseeDisplayTag(v, false)
@@ -270,6 +272,10 @@ func ConvertFromIsee(in Node, stripVendorTags bool) (out xmile.Node, err error) 
 		(*xm.Views)[1].XMLName.Local = "view"
 		(*xm.Views)[1].Name = "interface"
 		for _, v := range n.Variables {
+			if v.Display == nil {
+				log.Printf("var w/o display: %#v", v)
+				continue
+			}
 			nd := new(xmile.Display)
 			*nd = *v.Display
 			nd.XMLName.Local = v.XMLName.Local
